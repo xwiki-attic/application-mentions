@@ -150,11 +150,11 @@
 }
 
 a.mention.user.self {
-  background-color: #ff00005e;
+  background: rgba(255, 0, 0, 0.35);
 }
 
 a.mention.removed {
- text-decoration: line-through;
+  text-decoration: line-through;
 }</code>
     </property>
     <property>
@@ -569,7 +569,7 @@ a.mention.removed {
       <name>displayChoice</name>
     </property>
     <property>
-      <type>org.xwiki.mentions.DisplayChoice</type>
+      <type>org.xwiki.contrib.mentions.DisplayChoice</type>
     </property>
   </object>
 </xwikidoc>
