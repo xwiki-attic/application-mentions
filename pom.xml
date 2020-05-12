@@ -28,6 +28,7 @@
     <artifactId>parent-platform</artifactId>
     <version>12.3</version>
   </parent>
+  <version>1.0-SNAPSHOT</version>
   <artifactId>application-mentions</artifactId>
   <name>XWiki Mentions - Parent</name>
   <packaging>pom</packaging>
@@ -57,11 +58,11 @@
     <xwiki.release.jira.skip>false</xwiki.release.jira.skip>
     <xwiki.issueManagement.jira.id>XMENTIONS</xwiki.issueManagement.jira.id>
   </properties>
-<!--  <modules>-->
-<!--    <module>mentions-api</module>-->
-<!--    <module>mentions-notifications</module>-->
-<!--    <module>mentions-ui</module>-->
-<!--  </modules>-->
+  <modules>
+    <module>mentions-api</module>
+    <module>mentions-notifications</module>
+    <module>mentions-ui</module>
+  </modules>
   <build>
     <plugins>
       <plugin>
