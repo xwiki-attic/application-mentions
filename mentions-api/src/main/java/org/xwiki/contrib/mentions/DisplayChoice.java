@@ -17,13 +17,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.xwiki.mentions;
+package org.xwiki.contrib.mentions;
 
 /**
  * List the different way allowed to display a user mention.
  *
  * @version $Id$
- * @since 12.4RC1
+ * @since 1.0
  */
 public enum DisplayChoice
 {

@@ -1,0 +1,2 @@
+org.xwiki.contrib.mentions.internal.listeners.MentionsCreatedEventListener
+org.xwiki.contrib.mentions.internal.listeners.MentionsUpdatedEventListener
