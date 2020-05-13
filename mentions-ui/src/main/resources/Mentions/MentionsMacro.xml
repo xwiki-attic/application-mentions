@@ -371,18 +371,18 @@ a.mention.removed {
 #set ($firstName = $userProperties.getFirstName())
 #set ($lastName = $userProperties.getLastName())
 #set ($isCurrentUser = $xcontext.userReference == $identifier.reference)
-#set ($cssClasses = ["mention", "user"])
+#set ($cssClasses = ['mention', 'user'])
 #if ($isCurrentUser)
-#set ($discard = $cssClasses.add("self"))
-#set ($link = $xwiki.getURL($identifier.reference, 'view'))
+  #set ($discard = $cssClasses.add('self'))
+  #set ($link = $xwiki.getURL($identifier.reference, 'view'))
 #end
 {{html}}
-#if ($displayChoice == "FIRST_NAME")
-#set($content = $firstName)
-#elseif ($displayChoice == "LOGIN")
-#set($content = $identifier.reference.name)
+#if ($displayChoice == 'FIRST_NAME')
+  #set($content = $firstName)
+#elseif ($displayChoice == 'LOGIN')
+  #set($content = $identifier.reference.name)
 #else
-#set($content = "$firstName $!lastName")
+  #set($content = "$firstName $!lastName")
 #end
 &lt;a class="$stringtool.join($cssClasses, ' ')" href="$link"&gt;@$content&lt;/a&gt;
 {{/html}}
