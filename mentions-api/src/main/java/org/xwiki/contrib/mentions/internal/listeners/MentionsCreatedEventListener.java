@@ -19,17 +19,27 @@
  */
 package org.xwiki.contrib.mentions.internal.listeners;
 
+import java.util.List;
+
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.xwiki.bridge.event.DocumentCreatedEvent;
 import org.xwiki.component.annotation.Component;
+import org.xwiki.contrib.mentions.internal.async.MentionsCreatedRequest;
+import org.xwiki.job.JobException;
+import org.xwiki.job.JobExecutor;
 import org.xwiki.observation.AbstractEventListener;
 import org.xwiki.observation.event.Event;
 
+import com.xpn.xwiki.XWikiContext;
+import com.xpn.xwiki.doc.XWikiDocument;
+
 import static java.util.Collections.singletonList;
+import static org.xwiki.contrib.mentions.internal.async.jobs.MentionsCreateJob.ASYNC_REQUEST_TYPE;
 
 /**
  * Listen to entities creation. 
@@ -42,10 +52,13 @@ import static java.util.Collections.singletonList;
 @Named("MentionsCreatedEventListener")
 public class MentionsCreatedEventListener extends AbstractEventListener
 {
-    private static final Object EVENTS = singletonList(new DocumentCreatedEvent());
+    private static final List<DocumentCreatedEvent> EVENTS = singletonList(new DocumentCreatedEvent());
 
     @Inject
     private Logger logger;
+
+    @Inject
+    private JobExecutor jobExecutor;
 
     /**
      * Default constructor.
@@ -59,6 +72,14 @@ public class MentionsCreatedEventListener extends AbstractEventListener
     public void onEvent(Event event, Object source, Object data)
     {
         this.logger.debug("Event [{}] received from [{}] with data [{}].", event, source, data);
-        // TODO: directly delegate to a job to make it async
+        try {
+            XWikiDocument doc = (XWikiDocument) source;
+            XWikiContext ctx = (XWikiContext) data;
+            this.jobExecutor.execute(ASYNC_REQUEST_TYPE, new MentionsCreatedRequest(doc, ctx));
+        } catch (JobException e) {
+            this.logger
+                .warn("Failed to create a Job for the Event [{}] received from [{}] with data [{}]. Cause: [{}]", event,
+                    source, data, ExceptionUtils.getRootCauseMessage(e));
+        }
     }
 }
