@@ -143,17 +143,17 @@
       <cache>long</cache>
     </property>
     <property>
-      <code>a.mention {
+      <code>.mention a {
   background-color: #c2c2c25e;
   border-radius: 8px;
   padding: 2px 5px 2px 5px;
 }
 
-a.mention.user.self {
+.mention.user.self a {
   background: rgba(255, 0, 0, 0.35);
 }
 
-a.mention.removed {
+.mention.removed a {
   text-decoration: line-through;
 }</code>
     </property>
@@ -366,7 +366,6 @@ a.mention.removed {
       <code>{{velocity}}
 #set ($identifier = $wikimacro.parameters.identifier)
 #set ($displayChoice = $wikimacro.parameters.displayChoice)
-#set ($currentUser = $services.model.serialize($xcontext.userReference, 'default'))
 #set ($userProperties = $services.user.getProperties($identifier))
 #set ($firstName = $userProperties.getFirstName())
 #set ($lastName = $userProperties.getLastName())
@@ -376,16 +375,14 @@ a.mention.removed {
   #set ($discard = $cssClasses.add('self'))
   #set ($link = $xwiki.getURL($identifier.reference, 'view'))
 #end
-{{html}}
 #if ($displayChoice == 'FIRST_NAME')
-  #set($content = $firstName)
+  #set($content = "@$firstName")
 #elseif ($displayChoice == 'LOGIN')
-  #set($content = $identifier.reference.name)
+  #set($content = "@$identifier.reference.name")
 #else
-  #set($content = "$firstName $!lastName")
+  #set($content = "@$firstName $!lastName")
 #end
-&lt;a class="$stringtool.join($cssClasses, ' ')" href="$link"&gt;@$content&lt;/a&gt;
-{{/html}}
+(% class="$stringtool.join($cssClasses, ' ')" %) [[$content&gt;&gt;$identifier.reference]]
 {{/velocity}}</code>
     </property>
     <property>
