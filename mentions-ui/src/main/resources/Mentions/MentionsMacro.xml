@@ -354,7 +354,7 @@
       </visibility>
     </class>
     <property>
-      <async_cached>1</async_cached>
+      <async_cached>0</async_cached>
     </property>
     <property>
       <async_context/>
@@ -554,7 +554,7 @@
       </type>
     </class>
     <property>
-      <defaultValue/>
+      <defaultValue>FIRST_AND_LAST_NAME</defaultValue>
     </property>
     <property>
       <description>The display choice of the mention (this is only supported for user mention).</description>
