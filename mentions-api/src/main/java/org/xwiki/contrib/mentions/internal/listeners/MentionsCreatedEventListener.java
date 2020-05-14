@@ -25,7 +25,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.xwiki.bridge.event.DocumentCreatedEvent;
 import org.xwiki.component.annotation.Component;
@@ -39,6 +38,7 @@ import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 
 import static java.util.Collections.singletonList;
+import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCauseMessage;
 import static org.xwiki.contrib.mentions.internal.async.jobs.MentionsCreateJob.ASYNC_REQUEST_TYPE;
 
 /**
@@ -79,7 +79,7 @@ public class MentionsCreatedEventListener extends AbstractEventListener
         } catch (JobException e) {
             this.logger
                 .warn("Failed to create a Job for the Event [{}] received from [{}] with data [{}]. Cause: [{}]", event,
-                    source, data, ExceptionUtils.getRootCauseMessage(e));
+                    source, data, getRootCauseMessage(e));
         }
     }
 }

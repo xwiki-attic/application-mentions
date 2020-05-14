@@ -1,0 +1,4 @@
+org.xwiki.contrib.mentions.internal.descriptors.MentionEventDescriptor
+org.xwiki.contrib.mentions.internal.MentionsLegacyEventConverter
+org.xwiki.contrib.mentions.internal.MentionsNotificationDisplayer
+org.xwiki.contrib.mentions.internal.MentionsRecordableEventConverter

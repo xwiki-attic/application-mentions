@@ -48,8 +48,13 @@
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-platform-legacy-oldcore</artifactId>
+      <artifactId>xwiki-platform-oldcore</artifactId>
       <version>${platform.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.contrib</groupId>
+      <artifactId>mentions-notifications</artifactId>
+      <version>${project.version}</version>
     </dependency>
   </dependencies>
 </project>
