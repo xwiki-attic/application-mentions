@@ -19,6 +19,8 @@
  */
 package org.xwiki.contrib.mentions.internal;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.xwiki.text.XWikiToStringBuilder;
 
 import com.xpn.xwiki.doc.XWikiDocument;
@@ -75,6 +77,36 @@ public class MentionView
     public XWikiDocument getDocument()
     {
         return this.document;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) {
+            return true;
+        }
+
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        MentionView that = (MentionView) o;
+
+        return new EqualsBuilder()
+                   .append(this.authorURL, that.authorURL)
+                   .append(this.documentURL, that.documentURL)
+                   .append(this.document, that.document)
+                   .isEquals();
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return new HashCodeBuilder(17, 37)
+                   .append(this.authorURL)
+                   .append(this.documentURL)
+                   .append(this.document)
+                   .toHashCode();
     }
 
     @Override

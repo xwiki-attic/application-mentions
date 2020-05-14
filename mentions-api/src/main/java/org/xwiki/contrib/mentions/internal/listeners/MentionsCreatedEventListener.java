@@ -70,15 +70,16 @@ public class MentionsCreatedEventListener extends AbstractEventListener
     @Override
     public void onEvent(Event event, Object source, Object data)
     {
-        this.logger.debug("Event [{}] received from [{}] with data [{}].", event, source, data);
+        this.logger.debug("Event [DocumentCreatedEvent] received from [{}] with data [{}].", source, data);
         try {
             XWikiDocument doc = (XWikiDocument) source;
             this.jobExecutor.execute(ASYNC_REQUEST_TYPE,
                 new MentionsCreatedRequest(doc.getAuthorReference(), doc.getDocumentReference(), doc.getXDOM()));
         } catch (JobException e) {
-            this.logger
-                .warn("Failed to create a Job for the Event [{}] received from [{}] with data [{}]. Cause: [{}]", event,
-                    source, data, getRootCauseMessage(e));
+            this.logger.warn(
+                "Failed to create a Job for the Event [DocumentCreatedEvent] received from [{}] with data [{}]. " 
+                    + "Cause: [{}]",
+                source, data, getRootCauseMessage(e));
         }
     }
 }

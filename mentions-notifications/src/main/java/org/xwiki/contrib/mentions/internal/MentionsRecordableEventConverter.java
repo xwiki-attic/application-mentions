@@ -41,6 +41,7 @@ import org.xwiki.model.reference.DocumentReferenceResolver;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static java.util.Collections.singletonList;
+import static org.xwiki.contrib.mentions.events.MentionEvent.EVENT_TYPE;
 
 /**
  * Define the conversion from an {@link MentionEvent} to a {@link org.xwiki.eventstream.internal.DefaultEvent}.
@@ -82,7 +83,7 @@ public class MentionsRecordableEventConverter implements RecordableEventConverte
         Event convertedEvent = this.defaultConverter.convert(recordableEvent, source, data);
         convertedEvent.setUser(userDocument);
         convertedEvent.setDocument(document);
-        convertedEvent.setType(MentionEvent.EVENT_TYPE);
+        convertedEvent.setType(EVENT_TYPE);
         Map<String, String> parameters = initializeParameters(json);
         convertedEvent.setParameters(parameters);
         return convertedEvent;

@@ -19,9 +19,12 @@
  */
 package org.xwiki.contrib.mentions.internal.async;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.xwiki.job.AbstractRequest;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.rendering.block.XDOM;
+import org.xwiki.text.XWikiToStringBuilder;
 
 /**
  * Mention created request, send to create a mention analysis async job.
@@ -76,5 +79,45 @@ public class MentionsCreatedRequest extends AbstractRequest
     public XDOM getXDOM()
     {
         return this.xdom;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) {
+            return true;
+        }
+
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        MentionsCreatedRequest that = (MentionsCreatedRequest) o;
+
+        return new EqualsBuilder()
+                   .append(this.authorReference, that.authorReference)
+                   .append(this.documentReference, that.documentReference)
+                   .append(this.xdom, that.xdom)
+                   .isEquals();
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return new HashCodeBuilder(17, 37)
+                   .append(this.authorReference)
+                   .append(this.documentReference)
+                   .append(this.xdom)
+                   .toHashCode();
+    }
+
+    @Override
+    public String toString()
+    {
+        return new XWikiToStringBuilder(this)
+                   .append("authorReference", this.getAuthorReference())
+                   .append("documentReference", this.getDocumentReference())
+                   .append("xdom", this.getXDOM())
+                   .build();
     }
 }

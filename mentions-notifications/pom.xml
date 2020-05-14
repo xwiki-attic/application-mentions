@@ -33,8 +33,8 @@
   <name>XWiki Mentions - Notifications</name>
   <packaging>jar</packaging>
   <properties>
-    <xwiki.jacoco.instructionRatio>0.00</xwiki.jacoco.instructionRatio>
-    <xwiki.pitest.mutationThreshold>0</xwiki.pitest.mutationThreshold>
+    <xwiki.jacoco.instructionRatio>0.66</xwiki.jacoco.instructionRatio>
+    <xwiki.pitest.mutationThreshold>71</xwiki.pitest.mutationThreshold>
   </properties>
   <description>Handles the notififcations of user mentions.</description>
   <dependencies>
