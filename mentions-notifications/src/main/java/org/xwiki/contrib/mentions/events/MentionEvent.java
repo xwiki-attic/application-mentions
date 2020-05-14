@@ -20,11 +20,13 @@
 package org.xwiki.contrib.mentions.events;
 
 import java.util.Set;
-import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.xwiki.eventstream.RecordableEvent;
 import org.xwiki.eventstream.TargetableEvent;
 import org.xwiki.stability.Unstable;
+import org.xwiki.text.XWikiToStringBuilder;
 
 /**
  * The mention event.
@@ -59,7 +61,7 @@ public class MentionEvent implements RecordableEvent, TargetableEvent
     @Override
     public Set<String> getTarget()
     {
-        return this.targets.stream().map(it -> "xwiki:" + it).collect(Collectors.toSet());
+        return this.targets;
     }
 
     /**
@@ -68,12 +70,49 @@ public class MentionEvent implements RecordableEvent, TargetableEvent
      */
     public MentionEventParams getParams()
     {
-        return params;
+        return this.params;
     }
 
     @Override
     public boolean matches(Object otherEvent)
     {
         return otherEvent instanceof MentionEvent;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) {
+            return true;
+        }
+
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        MentionEvent that = (MentionEvent) o;
+
+        return new EqualsBuilder()
+                   .append(this.targets, that.targets)
+                   .append(this.params, that.params)
+                   .isEquals();
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return new HashCodeBuilder(17, 37)
+                   .append(this.targets)
+                   .append(this.params)
+                   .toHashCode();
+    }
+
+    @Override
+    public String toString()
+    {
+        return new XWikiToStringBuilder(this)
+                   .append("targets", this.getTarget())
+                   .append("params", this.getParams())
+                   .build();
     }
 }

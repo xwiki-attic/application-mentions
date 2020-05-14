@@ -20,9 +20,8 @@
 package org.xwiki.contrib.mentions.internal.async;
 
 import org.xwiki.job.AbstractRequest;
-
-import com.xpn.xwiki.XWikiContext;
-import com.xpn.xwiki.doc.XWikiDocument;
+import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.rendering.block.XDOM;
 
 /**
  * Mention created request, send to create a mention analysis async job.
@@ -32,37 +31,50 @@ import com.xpn.xwiki.doc.XWikiDocument;
  */
 public class MentionsCreatedRequest extends AbstractRequest
 {
-    private final XWikiDocument document;
+    private final DocumentReference authorReference;
 
-    private final XWikiContext ctx;
+    private final DocumentReference documentReference;
+
+    private final XDOM xdom;
 
     /**
      * Default constructor.
-     *
-     * @param document The created document.
-     * @param ctx The context of the creation.
+     * @param authorReference Reference of the author of the mention.
+     * @param documentReference Document in which the mention occurred.
+     * @param xdom The {@link XDOM} of the document in which the mention occurred.
      */
-    public MentionsCreatedRequest(XWikiDocument document, XWikiContext ctx)
+    public MentionsCreatedRequest(DocumentReference authorReference,
+        DocumentReference documentReference, XDOM xdom)
     {
-        this.document = document;
-        this.ctx = ctx;
+        this.authorReference = authorReference;
+        this.documentReference = documentReference;
+        this.xdom = xdom;
     }
 
     /**
      *
-     * @return the created document.
+     * @return Reference of the author of the mention.
      */
-    public XWikiDocument getDocument()
+    public DocumentReference getAuthorReference()
     {
-        return document;
+        return this.authorReference;
     }
 
     /**
      *
-     * @return the context of the creation.
+     * @return Document in which the mention occurred.
      */
-    public XWikiContext getCtx()
+    public DocumentReference getDocumentReference()
     {
-        return ctx;
+        return this.documentReference;
+    }
+
+    /**
+     *
+     * @return The {@link XDOM} of the document in which the mention occurred.
+     */
+    public XDOM getXDOM()
+    {
+        return this.xdom;
     }
 }

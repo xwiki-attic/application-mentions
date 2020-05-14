@@ -40,8 +40,8 @@ public class MentionView
     /**
      * Default constructor.
      * @param authorURL URL of the profile page of the mention author.
-     * @param documentURL URL of the document in which the mention occured.
-     * @param document Document in which the mention occured.
+     * @param documentURL URL of the document in which the mention occurred.
+     * @param document Document in which the mention occurred.
      */
     public MentionView(String authorURL, String documentURL, XWikiDocument document)
     {
@@ -56,25 +56,25 @@ public class MentionView
      */
     public String getAuthorURL()
     {
-        return authorURL;
+        return this.authorURL;
     }
 
     /**
      *
-     * @return URL of the document in which the mention occured.
+     * @return URL of the document in which the mention occurred.
      */
     public String getDocumentURL()
     {
-        return documentURL;
+        return this.documentURL;
     }
 
     /**
      *
-     * @return Document in which the mention occured.
+     * @return Document in which the mention occurred.
      */
     public XWikiDocument getDocument()
     {
-        return document;
+        return this.document;
     }
 
     @Override

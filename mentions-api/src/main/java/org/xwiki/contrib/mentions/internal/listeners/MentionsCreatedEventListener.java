@@ -34,7 +34,6 @@ import org.xwiki.job.JobExecutor;
 import org.xwiki.observation.AbstractEventListener;
 import org.xwiki.observation.event.Event;
 
-import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 
 import static java.util.Collections.singletonList;
@@ -74,8 +73,8 @@ public class MentionsCreatedEventListener extends AbstractEventListener
         this.logger.debug("Event [{}] received from [{}] with data [{}].", event, source, data);
         try {
             XWikiDocument doc = (XWikiDocument) source;
-            XWikiContext ctx = (XWikiContext) data;
-            this.jobExecutor.execute(ASYNC_REQUEST_TYPE, new MentionsCreatedRequest(doc, ctx));
+            this.jobExecutor.execute(ASYNC_REQUEST_TYPE,
+                new MentionsCreatedRequest(doc.getAuthorReference(), doc.getDocumentReference(), doc.getXDOM()));
         } catch (JobException e) {
             this.logger
                 .warn("Failed to create a Job for the Event [{}] received from [{}] with data [{}]. Cause: [{}]", event,

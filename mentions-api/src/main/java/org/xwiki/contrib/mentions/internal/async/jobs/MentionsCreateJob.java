@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.xwiki.component.annotation.Component;
@@ -34,11 +35,10 @@ import org.xwiki.contrib.mentions.internal.async.MentionsCreatedRequest;
 import org.xwiki.contrib.mentions.internal.async.MentionsCreatedStatus;
 import org.xwiki.job.AbstractJob;
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.rendering.block.Block;
 import org.xwiki.rendering.block.MacroBlock;
 import org.xwiki.rendering.block.XDOM;
-
-import com.xpn.xwiki.doc.XWikiDocument;
 
 import static org.xwiki.contrib.mentions.internal.async.jobs.MentionsCreateJob.ASYNC_REQUEST_TYPE;
 
@@ -57,27 +57,33 @@ public class MentionsCreateJob extends AbstractJob<MentionsCreatedRequest, Menti
      */
     public static final String ASYNC_REQUEST_TYPE = "mentions-create-job";
 
+    @Inject
+    private DocumentReferenceResolver<String> documentReferenceResolver;
+
     private static boolean matchMentionMacro(Block block)
     {
         return block instanceof MacroBlock && Objects.equals(((MacroBlock) block).getId(), "mention");
     }
 
     @Override
-    protected void runInternal() throws Exception
+    protected void runInternal()
     {
         MentionsCreatedRequest request = this.getRequest();
-        XWikiDocument document = request.getDocument();
-        XDOM xdom = document.getXDOM();
+        XDOM xdom = request.getXDOM();
+        DocumentReference authorReference = request.getAuthorReference();
         List<Block> blocks = xdom.getBlocks(MentionsCreateJob::matchMentionMacro, Block.Axes.DESCENDANT);
         for (Block block : blocks) {
             MacroBlock macro = (MacroBlock) block;
             // TODO: deal with group members.
             // TODO: deal with targets outside the system.
-            Set<String> identity = Stream.of(macro.getParameter("identifier")).collect(Collectors.toSet());
-            DocumentReference authorReference = document.getAuthorReference();
+            Set<String> identity = Stream.of(macro.getParameter("identifier"))
+                                       .map(it -> this.documentReferenceResolver.resolve(it))
+                                       .filter(Objects::nonNull)
+                                       .map(DocumentReference::toString)
+                                       .collect(Collectors.toSet());
             MentionEventParams params = new MentionEventParams()
                                             .setUserReference(authorReference.toString())
-                                            .setDocumentReference(document.getDocumentReference().toString());
+                                            .setDocumentReference(request.getDocumentReference().toString());
             MentionEvent event = new MentionEvent(identity, params);
             this.observationManager.notify(event, "org.xwiki.contrib:mentions-notifications", MentionEvent.EVENT_TYPE);
         }

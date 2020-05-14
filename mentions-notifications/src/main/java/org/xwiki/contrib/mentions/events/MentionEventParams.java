@@ -19,6 +19,10 @@
  */
 package org.xwiki.contrib.mentions.events;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.xwiki.text.XWikiToStringBuilder;
+
 /**
  * The parameters of the mention event.
  * This class is serialized to be retrieved for notifications rendering.
@@ -33,19 +37,12 @@ public class MentionEventParams
     private String documentReference;
 
     /**
-     * Default constructor.
-     */
-    public MentionEventParams()
-    {
-    }
-
-    /**
      *
      * @return The the user doing the mention.
      */
     public String getUserReference()
     {
-        return userReference;
+        return this.userReference;
     }
 
     /**
@@ -65,7 +62,7 @@ public class MentionEventParams
      */
     public String getDocumentReference()
     {
-        return documentReference;
+        return this.documentReference;
     }
 
     /**
@@ -77,5 +74,42 @@ public class MentionEventParams
     {
         this.documentReference = documentReference;
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) {
+            return true;
+        }
+
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        MentionEventParams that = (MentionEventParams) o;
+
+        return new EqualsBuilder()
+                   .append(this.userReference, that.userReference)
+                   .append(this.documentReference, that.documentReference)
+                   .isEquals();
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return new HashCodeBuilder(17, 37)
+                   .append(this.userReference)
+                   .append(this.documentReference)
+                   .toHashCode();
+    }
+
+    @Override
+    public String toString()
+    {
+        return new XWikiToStringBuilder(this)
+                   .append("userReference", this.getUserReference())
+                   .append("documentReference", this.getDocumentReference())
+                   .build();
     }
 }

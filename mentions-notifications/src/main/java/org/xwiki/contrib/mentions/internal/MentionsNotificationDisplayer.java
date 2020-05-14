@@ -125,13 +125,13 @@ public class MentionsNotificationDisplayer implements NotificationDisplayer
             this.documentReferenceResolver.resolve(mentionEventParams.getDocumentReference());
 
         try {
-            XWikiDocument document =
-                contextProvider.get().getWiki().getDocument(documentReference, contextProvider.get());
+            XWikiContext context = this.contextProvider.get();
+            XWikiDocument document = context.getWiki().getDocument(documentReference, context);
             String urlAction = "view";
             String authorURL = ((XWikiDocument) this.documentAccess.getDocumentInstance(userReference))
-                                   .getExternalURL(urlAction, this.contextProvider.get());
+                                   .getExternalURL(urlAction, context);
             String documentURL = ((XWikiDocument) this.documentAccess.getDocumentInstance(documentReference))
-                                     .getExternalURL(urlAction, this.contextProvider.get());
+                                     .getExternalURL(urlAction, context);
             return Optional.of(new MentionView(authorURL, documentURL, document));
         } catch (Exception e) {
             this.logger
@@ -149,9 +149,8 @@ public class MentionsNotificationDisplayer implements NotificationDisplayer
     private Optional<MentionEventParams> deserializeParam(Event event)
     {
         if (event.getParameters().get(MENTIONS_PARAMETER_KEY) != null) {
-            MentionEventParams mentionEventParams = null;
             try {
-                mentionEventParams = new ObjectMapper().readValue(
+                MentionEventParams mentionEventParams = new ObjectMapper().readValue(
                     new StringReader(event.getParameters().get(MENTIONS_PARAMETER_KEY)), MentionEventParams.class);
 
                 return Optional.of(mentionEventParams);
