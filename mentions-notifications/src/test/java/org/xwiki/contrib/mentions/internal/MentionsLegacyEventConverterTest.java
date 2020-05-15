@@ -47,7 +47,7 @@ import static org.xwiki.contrib.mentions.internal.MentionsRecordableEventConvert
  * @since 1.0
  */
 @ComponentTest
-class MentionsLegacyEventConverterTest
+public class MentionsLegacyEventConverterTest
 {
     @InjectMockComponents
     private MentionsLegacyEventConverter activityPubLegacyEventConverter;

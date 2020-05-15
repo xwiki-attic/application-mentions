@@ -58,7 +58,7 @@ import static org.xwiki.contrib.mentions.internal.MentionsRecordableEventConvert
  * @since 1.0
  */
 @ComponentTest
-class MentionsNotificationDisplayerTest
+public class MentionsNotificationDisplayerTest
 {
     /**
      * TODO:
