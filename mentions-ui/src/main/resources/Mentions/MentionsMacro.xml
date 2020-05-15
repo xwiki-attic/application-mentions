@@ -554,7 +554,7 @@
       </type>
     </class>
     <property>
-      <defaultValue>FIRST_AND_LAST_NAME</defaultValue>
+      <defaultValue/>
     </property>
     <property>
       <description>The display choice of the mention (this is only supported for user mention).</description>
