@@ -22,80 +22,50 @@ package org.xwiki.contrib.mentions.internal.async;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.xwiki.job.AbstractRequest;
-import org.xwiki.model.reference.DocumentReference;
-import org.xwiki.rendering.block.XDOM;
 import org.xwiki.text.XWikiToStringBuilder;
+
+import com.xpn.xwiki.XWikiContext;
+import com.xpn.xwiki.doc.XWikiDocument;
 
 /**
  * Mention update request, send to create a mention analysis async job.
  *
  * @version $Id$
  * @since 1.0
- * @param <T> Type of payload, expected to be either {@link XDOM} or {@link String}.
  */
-public class MentionsUpdatedRequest<T> extends AbstractRequest
+public class MentionsUpdatedRequest extends AbstractRequest
 {
-    private final DocumentReference authorReference;
+    private final XWikiDocument doc;
 
-    private final DocumentReference documentReference;
-
-    private final T oldPayload;
-
-    private final T newPayload;
+    private final XWikiContext ctx;
 
     /**
-     * Default constructor.
      *
-     * The payload is expected to be either {@link XDOM} or {@link String}.
-     *
-     * @param authorReference Reference of the author of the mention.
-     * @param documentReference Document in which the mention occurred.
-     * @param oldPayload The payload of the document in which the mention occurred, before it was edited.
-     * @param newPayload The payload of the document in which the mention occurred, once edited.
+     * @param doc updated document.
+     * @param ctx updated document context.
      */
-    public MentionsUpdatedRequest(DocumentReference authorReference, DocumentReference documentReference, T oldPayload,
-        T newPayload)
+    public MentionsUpdatedRequest(XWikiDocument doc, XWikiContext ctx)
     {
-        this.authorReference = authorReference;
-        this.documentReference = documentReference;
-        this.oldPayload = oldPayload;
-        this.newPayload = newPayload;
+        this.doc = doc;
+        this.ctx = ctx;
     }
 
     /**
      *
-     * @return Reference of the author of the mention.
+     * @return updated document
      */
-    public DocumentReference getAuthorReference()
+    public XWikiDocument getDoc()
     {
-        return this.authorReference;
+        return this.doc;
     }
 
     /**
      *
-     * @return Document in which the mention occurred.
+     * @return the updated document context.
      */
-    public DocumentReference getDocumentReference()
+    public XWikiContext getCtx()
     {
-        return this.documentReference;
-    }
-
-    /**
-     *
-     * @return The payload of the document in which the mention occurred, before it was edited.
-     */
-    public T getOldPayload()
-    {
-        return this.oldPayload;
-    }
-
-    /**
-     *
-     * @return The payload of the document in which the mention occurred, once edited.
-     */
-    public T getNewPayload()
-    {
-        return this.newPayload;
+        return this.ctx;
     }
 
     @Override
@@ -109,13 +79,11 @@ public class MentionsUpdatedRequest<T> extends AbstractRequest
             return false;
         }
 
-        MentionsUpdatedRequest<?> that = (MentionsUpdatedRequest<?>) o;
+        MentionsUpdatedRequest that = (MentionsUpdatedRequest) o;
 
         return new EqualsBuilder()
-                   .append(this.authorReference, that.authorReference)
-                   .append(this.documentReference, that.documentReference)
-                   .append(this.oldPayload, that.oldPayload)
-                   .append(this.newPayload, that.newPayload)
+                   .append(this.doc, that.doc)
+                   .append(this.ctx, that.ctx)
                    .isEquals();
     }
 
@@ -123,10 +91,8 @@ public class MentionsUpdatedRequest<T> extends AbstractRequest
     public int hashCode()
     {
         return new HashCodeBuilder(17, 37)
-                   .append(this.authorReference)
-                   .append(this.documentReference)
-                   .append(this.oldPayload)
-                   .append(this.newPayload)
+                   .append(this.doc)
+                   .append(this.ctx)
                    .toHashCode();
     }
 
@@ -134,10 +100,8 @@ public class MentionsUpdatedRequest<T> extends AbstractRequest
     public String toString()
     {
         return new XWikiToStringBuilder(this)
-                   .append("authorReference", this.getAuthorReference())
-                   .append("documentReference", this.getDocumentReference())
-                   .append("oldPayload", this.getOldPayload())
-                   .append("newPayload", this.getNewPayload())
+                   .append("doc", this.getDoc())
+                   .append("ctx", this.getCtx())
                    .build();
     }
 }

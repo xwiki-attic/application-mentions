@@ -18,9 +18,15 @@ package org.xwiki.contrib.mentions.internal.async.jobs;/*
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
+import java.io.StringReader;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Optional;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.inject.Named;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -35,20 +41,26 @@ import org.xwiki.rendering.block.MacroBlock;
 import org.xwiki.rendering.block.NewLineBlock;
 import org.xwiki.rendering.block.ParagraphBlock;
 import org.xwiki.rendering.block.XDOM;
+import org.xwiki.rendering.parser.Parser;
 import org.xwiki.test.junit5.mockito.ComponentTest;
 import org.xwiki.test.junit5.mockito.InjectMockComponents;
 import org.xwiki.test.junit5.mockito.MockComponent;
 
-import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
+import com.xpn.xwiki.objects.BaseObject;
+import com.xpn.xwiki.objects.DateProperty;
+import com.xpn.xwiki.objects.LargeStringProperty;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.xwiki.contrib.mentions.events.MentionEvent.EVENT_TYPE;
 
 /**
  * Test of {@link MentionsCreateJob}
@@ -65,12 +77,6 @@ public class MentionsCreateJobTest
     @Mock
     private XWikiDocument document;
 
-    @Mock
-    private XWikiContext context;
-
-    // @MockComponent
-    // private DocumentReferenceResolver<String> documentReferenceResolver;
-
     @MockComponent
     protected ObservationManager observationManager;
 
@@ -80,11 +86,14 @@ public class MentionsCreateJobTest
     @MockComponent
     private MentionIdentityService identityService;
 
+    @MockComponent
+    @Named("xwiki/2.1")
+    private Parser parser;
+
     @Test
     void runInternal()
     {
         DocumentReference authorReference = new DocumentReference("xwiki", "XWiki", "U2");
-        DocumentReference mentionnedReference = new DocumentReference("xwiki", "XWiki", "U1");
         DocumentReference documentReference = new DocumentReference("xwiki", "XWiki", "Doc");
         HashMap<String, String> mentionParams = new HashMap<>();
         mentionParams.put("identifier", "XWiki.U1");
@@ -96,16 +105,19 @@ public class MentionsCreateJobTest
             mention
         ))));
 
-        when(this.xdomService.extractPayload(xdom)).thenReturn(Optional.of(xdom));
+        when(this.document.getAuthorReference()).thenReturn(authorReference);
+        when(this.document.getDocumentReference()).thenReturn(documentReference);
+        when(this.document.getXDOM()).thenReturn(xdom);
         when(this.xdomService.listMentionMacros(xdom)).thenReturn(singletonList(mention));
-        HashSet<String> value = new HashSet<>();
+
+        Set<String> value = new HashSet<>();
         value.add("xwiki:XWiki.U1");
         when(this.identityService.resolveIdentity("XWiki.U1")).thenReturn(value);
 
-        this.job.initialize(new MentionsCreatedRequest<>(authorReference, documentReference, xdom));
+        this.job.initialize(new MentionsCreatedRequest(this.document));
         this.job.runInternal();
 
-        HashSet<String> targets = new HashSet<>();
+        Set<String> targets = new HashSet<>();
         targets.add("xwiki:XWiki.U1");
         MentionEvent event = new MentionEvent(targets,
             new MentionEventParams().setUserReference("xwiki:XWiki.U2").setDocumentReference("xwiki:XWiki.Doc"));
@@ -117,16 +129,92 @@ public class MentionsCreateJobTest
     {
         DocumentReference authorReference = new DocumentReference("xwiki", "XWiki", "U2");
         DocumentReference documentReference = new DocumentReference("xwiki", "XWiki", "Doc");
+
         XDOM xdom = new XDOM(singletonList(new ParagraphBlock(asList(
             new NewLineBlock(),
             new MacroBlock("macro0", new HashMap<>(), false),
             new NewLineBlock()
-        ))));
 
-        this.job.initialize(new MentionsCreatedRequest<>(authorReference, documentReference, xdom));
+        ))));
+        when(this.xdomService.listMentionMacros(xdom)).thenReturn(emptyList());
+
+        when(this.document.getAuthorReference()).thenReturn(authorReference);
+        when(this.document.getDocumentReference()).thenReturn(documentReference);
+        when(this.document.getXDOM()).thenReturn(xdom);
+
+        Set<String> value = new HashSet<>();
+        value.add("xwiki:XWiki.U1");
+        when(this.identityService.resolveIdentity("XWiki.U1")).thenReturn(value);
+
+        this.job.initialize(new MentionsCreatedRequest(this.document));
         this.job.runInternal();
 
         verify(this.observationManager, never()).notify(any(), any(), any());
+    }
+
+    @Test
+    void runInternalAWMFields() throws Exception
+    {
+        DocumentReference authorReference = new DocumentReference("xwiki", "XWiki", "U2");
+        DocumentReference documentReference = new DocumentReference("xwiki", "XWiki", "Doc");
+
+        XDOM xdom = new XDOM(singletonList(new ParagraphBlock(asList(
+            new NewLineBlock(),
+            new MacroBlock("macro0", new HashMap<>(), false),
+            new NewLineBlock()
+
+        ))));
+        when(this.xdomService.listMentionMacros(xdom)).thenReturn(emptyList());
+
+        when(this.document.getAuthorReference()).thenReturn(authorReference);
+        when(this.document.getDocumentReference()).thenReturn(documentReference);
+        when(this.document.getXDOM()).thenReturn(xdom);
+        Map<DocumentReference, List<BaseObject>> xObjects = new HashMap<>();
+        BaseObject baseObject = new BaseObject();
+        baseObject.addField("f1", new DateProperty());
+        LargeStringProperty element = new LargeStringProperty();
+        element.setValue("CONTENT 1");
+        baseObject.addField("f2", element);
+
+        BaseObject baseObject2 = new BaseObject();
+        LargeStringProperty element1 = new LargeStringProperty();
+        element1.setValue("CONTENT 2");
+        baseObject2.addField("f3", element1);
+        xObjects.put(documentReference, Arrays.asList(baseObject, baseObject2));
+        when(this.document.getXObjects()).thenReturn(xObjects);
+
+        Set<String> value = new HashSet<>();
+        value.add("xwiki:XWiki.U1");
+        when(this.identityService.resolveIdentity("XWiki.U1")).thenReturn(value);
+
+        HashMap<String, String> parameters = new HashMap<>();
+        parameters.put("identifier", "XWiki.User");
+        MacroBlock mention = new MacroBlock("mention", parameters, false);
+        XDOM xdom1 = new XDOM(singletonList(mention));
+        XDOM xdom2 = new XDOM(singletonList(new MacroBlock("macro0", new HashMap<>(), false)));
+        when(this.parser.parse(any(StringReader.class))).thenReturn(xdom1, xdom2);
+
+        when(this.xdomService.listMentionMacros(xdom1)).thenReturn(singletonList(mention));
+        when(this.xdomService.listMentionMacros(xdom2)).thenReturn(emptyList());
+
+        HashSet<String> value1 = new HashSet<>();
+        value1.add("xwiki:XWiki.User");
+        when(this.identityService.resolveIdentity("XWiki.User")).thenReturn(value1);
+
+        this.job.initialize(new MentionsCreatedRequest(this.document));
+        this.job.runInternal();
+
+        verify(this.parser, times(2)).parse(any(StringReader.class));
+        verify(this.xdomService).listMentionMacros(xdom1);
+        verify(this.xdomService).listMentionMacros(xdom2);
+        HashSet<String> targets = new HashSet<>();
+        targets.add("xwiki:XWiki.User");
+        MentionEventParams mentionEventParams = new MentionEventParams()
+                                                    .setDocumentReference(documentReference.toString())
+                                                    .setUserReference(authorReference.toString());
+        MentionEvent mentionEvent = new MentionEvent(targets, mentionEventParams);
+        verify(this.observationManager).notify(mentionEvent,
+            "org.xwiki.contrib:mentions-notifications", EVENT_TYPE);
     }
 
     @Test

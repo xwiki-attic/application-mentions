@@ -21,7 +21,6 @@ package org.xwiki.contrib.mentions;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.xwiki.component.annotation.Role;
 import org.xwiki.rendering.block.MacroBlock;
@@ -38,15 +37,6 @@ import org.xwiki.stability.Unstable;
 @Unstable
 public interface MentionXDOMService
 {
-    /**
-     *
-     * Read the payload and get the corresponding {@link XDOM}, eventually parsing it if needed.
-     *
-     * @param payload the payload, expected to be a {@link XDOM} or a {@link String} corresponding to xwiki/2.1 syntax.
-     * @return the XDOM of the payload.
-     */
-    Optional<XDOM> extractPayload(Object payload);
-
     /**
      * Search for the mentions macro inside an {@link XDOM}.
      * @param xdom The xdom.

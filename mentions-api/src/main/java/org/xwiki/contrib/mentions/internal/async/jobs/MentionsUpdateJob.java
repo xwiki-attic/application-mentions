@@ -21,7 +21,6 @@ package org.xwiki.contrib.mentions.internal.async.jobs;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -34,8 +33,11 @@ import org.xwiki.contrib.mentions.events.MentionEventParams;
 import org.xwiki.contrib.mentions.internal.async.MentionsUpdatedRequest;
 import org.xwiki.contrib.mentions.internal.async.MentionsUpdatedStatus;
 import org.xwiki.job.AbstractJob;
+import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.rendering.block.MacroBlock;
 import org.xwiki.rendering.block.XDOM;
+
+import com.xpn.xwiki.doc.XWikiDocument;
 
 import static org.xwiki.contrib.mentions.internal.async.jobs.MentionsUpdateJob.ASYNC_REQUEST_TYPE;
 
@@ -47,7 +49,7 @@ import static org.xwiki.contrib.mentions.internal.async.jobs.MentionsUpdateJob.A
  */
 @Component
 @Named(ASYNC_REQUEST_TYPE)
-public class MentionsUpdateJob extends AbstractJob<MentionsUpdatedRequest<?>, MentionsUpdatedStatus>
+public class MentionsUpdateJob extends AbstractJob<MentionsUpdatedRequest, MentionsUpdatedStatus>
 {
     /**
      * The name of the job.
@@ -63,33 +65,39 @@ public class MentionsUpdateJob extends AbstractJob<MentionsUpdatedRequest<?>, Me
     @Override
     protected void runInternal()
     {
-        MentionsUpdatedRequest<?> request = this.getRequest();
+        MentionsUpdatedRequest request = this.getRequest();
+        XDOM oldXdom = request.getCtx().getDoc().getXDOM();
+        XWikiDocument newDoc = request.getDoc();
+        XDOM newXdom = newDoc.getXDOM();
+        DocumentReference authorReference = newDoc.getAuthorReference();
+        DocumentReference documentReference = newDoc.getDocumentReference();
 
-        Optional<XDOM> optOldXdom = this.xdomService.extractPayload(request.getOldPayload());
-        Optional<XDOM> optNewXdom = this.xdomService.extractPayload(request.getNewPayload());
+        handle(oldXdom, newXdom, authorReference, documentReference);
+    }
 
-        optOldXdom.ifPresent(oldXdom -> optNewXdom.ifPresent(newXdom -> {
-            List<MacroBlock> oldMentions = this.xdomService.listMentionMacros(oldXdom);
-            List<MacroBlock> newMentions = this.xdomService.listMentionMacros(newXdom);
+    private void handle(XDOM oldXdom, XDOM newXdom, DocumentReference authorReference,
+        DocumentReference documentReference)
+    {
+        List<MacroBlock> oldMentions = this.xdomService.listMentionMacros(oldXdom);
+        List<MacroBlock> newMentions = this.xdomService.listMentionMacros(newXdom);
 
-            Map<String, Long> oldCounts = this.xdomService.countByIdentifier(oldMentions);
-            Map<String, Long> newCounts = this.xdomService.countByIdentifier(newMentions);
+        Map<String, Long> oldCounts = this.xdomService.countByIdentifier(oldMentions);
+        Map<String, Long> newCounts = this.xdomService.countByIdentifier(newMentions);
 
-            // for each user, we check its number of mentions and compare it to the same number on the 
-            // old document (or 0 if the user wan't mentionned before).
-            // If the number increased, a notification is send.
-            newCounts.forEach((k, v) -> {
-                Long oldCount = oldCounts.getOrDefault(k, 0L);
-                if (v > oldCount) {
-                    MentionEventParams params = new MentionEventParams()
-                                                    .setUserReference(request.getAuthorReference().toString())
-                                                    .setDocumentReference(request.getDocumentReference().toString());
-                    MentionEvent event = new MentionEvent(this.identityService.resolveIdentity(k), params);
-                    MentionsUpdateJob.this.observationManager
-                        .notify(event, "org.xwiki.contrib:mentions-notifications", MentionEvent.EVENT_TYPE);
-                }
-            });
-        }));
+        // for each user, we check its number of mentions and compare it to the same number on the 
+        // old document (or 0 if the user wan't mentionned before).
+        // If the number increased, a notification is send.
+        newCounts.forEach((k, v) -> {
+            Long oldCount = oldCounts.getOrDefault(k, 0L);
+            if (v > oldCount) {
+                MentionEventParams params = new MentionEventParams()
+                                                .setUserReference(authorReference.toString())
+                                                .setDocumentReference(documentReference.toString());
+                MentionEvent event = new MentionEvent(this.identityService.resolveIdentity(k), params);
+                MentionsUpdateJob.this.observationManager
+                    .notify(event, "org.xwiki.contrib:mentions-notifications", MentionEvent.EVENT_TYPE);
+            }
+        });
     }
 
     @Override

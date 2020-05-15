@@ -22,68 +22,36 @@ package org.xwiki.contrib.mentions.internal.async;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.xwiki.job.AbstractRequest;
-import org.xwiki.model.reference.DocumentReference;
-import org.xwiki.rendering.block.XDOM;
 import org.xwiki.text.XWikiToStringBuilder;
+
+import com.xpn.xwiki.doc.XWikiDocument;
 
 /**
  * Mention created request, send to create a mention analysis async job.
  *
  * @version $Id$
  * @since 1.0
- * @param <T> Type of the payload, expected to be either {@link XDOM} or {@link String}.
  */
-public class MentionsCreatedRequest<T> extends AbstractRequest
+public class MentionsCreatedRequest extends AbstractRequest
 {
-    private final DocumentReference authorReference;
-
-    private final DocumentReference documentReference;
-
-    private final T payload;
+    private final XWikiDocument doc;
 
     /**
-     * Default constructor.
      *
-     * The payload is expected to be either {@link XDOM} or {@link String}.
-     *
-     * @param authorReference Reference of the author of the mention.
-     * @param documentReference Document in which the mention occurred.
-     * @param payload The payload of the document in which the mention occurred.
+     * @param doc created document.
      */
-    public MentionsCreatedRequest(DocumentReference authorReference,
-        DocumentReference documentReference, T payload)
+    public MentionsCreatedRequest(XWikiDocument doc)
     {
-        this.authorReference = authorReference;
-        this.documentReference = documentReference;
-        this.payload = payload;
+        this.doc = doc;
     }
 
     /**
      *
-     * @return Reference of the author of the mention.
+     * @return created document
      */
-    public DocumentReference getAuthorReference()
+    public XWikiDocument getDoc()
     {
-        return this.authorReference;
-    }
-
-    /**
-     *
-     * @return Document in which the mention occurred.
-     */
-    public DocumentReference getDocumentReference()
-    {
-        return this.documentReference;
-    }
-
-    /**
-     * The payload is expected to be either {@link XDOM} or {@link String}.
-     *
-     * @return The payload  of the document in which the mention occurred.
-     */
-    public T getPayload()
-    {
-        return this.payload;
+        return this.doc;
     }
 
     @Override
@@ -100,9 +68,7 @@ public class MentionsCreatedRequest<T> extends AbstractRequest
         MentionsCreatedRequest that = (MentionsCreatedRequest) o;
 
         return new EqualsBuilder()
-                   .append(this.authorReference, that.authorReference)
-                   .append(this.documentReference, that.documentReference)
-                   .append(this.payload, that.payload)
+                   .append(this.doc, that.doc)
                    .isEquals();
     }
 
@@ -110,9 +76,7 @@ public class MentionsCreatedRequest<T> extends AbstractRequest
     public int hashCode()
     {
         return new HashCodeBuilder(17, 37)
-                   .append(this.authorReference)
-                   .append(this.documentReference)
-                   .append(this.payload)
+                   .append(this.doc)
                    .toHashCode();
     }
 
@@ -120,9 +84,7 @@ public class MentionsCreatedRequest<T> extends AbstractRequest
     public String toString()
     {
         return new XWikiToStringBuilder(this)
-                   .append("authorReference", this.getAuthorReference())
-                   .append("documentReference", this.getDocumentReference())
-                   .append("payload", this.getPayload())
+                   .append("doc", this.getDoc())
                    .build();
     }
 }

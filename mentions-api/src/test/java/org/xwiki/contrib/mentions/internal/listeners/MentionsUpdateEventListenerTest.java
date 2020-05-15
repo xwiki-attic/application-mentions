@@ -21,8 +21,8 @@ package org.xwiki.contrib.mentions.internal.listeners;/*
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.Mock;
-import org.xwiki.bridge.event.DocumentCreatedEvent;
-import org.xwiki.contrib.mentions.internal.async.MentionsCreatedRequest;
+import org.xwiki.bridge.event.DocumentUpdatedEvent;
+import org.xwiki.contrib.mentions.internal.async.MentionsUpdatedRequest;
 import org.xwiki.job.JobException;
 import org.xwiki.job.JobExecutor;
 import org.xwiki.model.reference.DocumentReference;
@@ -31,6 +31,7 @@ import org.xwiki.test.junit5.mockito.ComponentTest;
 import org.xwiki.test.junit5.mockito.InjectMockComponents;
 import org.xwiki.test.junit5.mockito.MockComponent;
 
+import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 
 import ch.qos.logback.classic.Level;
@@ -41,22 +42,25 @@ import static org.mockito.Mockito.verify;
 import static org.xwiki.test.LogLevel.DEBUG;
 
 /**
- * Test of {@link MentionsCreatedEventListener}.
+ * Test of {@link MentionsUpdatedEventListener}.
  *
  * @version $Id$
  * @since 1.0
  */
 @ComponentTest
-public class MentionsCreatedEventListenerTest
+public class MentionsUpdateEventListenerTest
 {
     @RegisterExtension
     LogCaptureExtension logCapture = new LogCaptureExtension(DEBUG);
 
     @InjectMockComponents
-    private MentionsCreatedEventListener listener;
+    private MentionsUpdatedEventListener listener;
 
     @Mock
     private XWikiDocument document;
+
+    @Mock
+    private XWikiContext context;
 
     @MockComponent
     private JobExecutor jobExecutor;
@@ -65,35 +69,39 @@ public class MentionsCreatedEventListenerTest
     void onEvent() throws Exception
     {
         DocumentReference dr = new DocumentReference("xwiki", "XWiki", "Doc");
-        DocumentCreatedEvent event = new DocumentCreatedEvent(dr);
+        DocumentUpdatedEvent event = new DocumentUpdatedEvent(dr);
 
-        this.listener.onEvent(event, this.document, null);
+        this.listener.onEvent(event, this.document, this.context);
 
         assertEquals(1, this.logCapture.size());
         assertEquals(Level.DEBUG, this.logCapture.getLogEvent(0).getLevel());
-        assertEquals("Event [org.xwiki.bridge.event.DocumentCreatedEvent] received from [document] with data [null].",
+        assertEquals(
+            "Event [org.xwiki.bridge.event.DocumentUpdatedEvent] received from [document] with data [context].",
             this.logCapture.getMessage(0));
-        verify(this.jobExecutor).execute("mentions-create-job", new MentionsCreatedRequest(this.document));
+        verify(this.jobExecutor)
+            .execute("mentions-update-job", new MentionsUpdatedRequest(this.document, this.context));
     }
 
     @Test
     void onEventError() throws Exception
     {
         DocumentReference dr = new DocumentReference("xwiki", "XWiki", "Doc");
-        DocumentCreatedEvent event = new DocumentCreatedEvent(dr);
+        DocumentUpdatedEvent event = new DocumentUpdatedEvent(dr);
 
         doThrow(new JobException(null, null)).when(this.jobExecutor)
-            .execute("mentions-create-job", new MentionsCreatedRequest(this.document));
+            .execute("mentions-update-job", new MentionsUpdatedRequest(this.document, this.context));
 
-        this.listener.onEvent(event, this.document, null);
+        this.listener.onEvent(event, this.document, this.context);
 
         assertEquals(2, this.logCapture.size());
         assertEquals(Level.DEBUG, this.logCapture.getLogEvent(0).getLevel());
-        assertEquals("Event [org.xwiki.bridge.event.DocumentCreatedEvent] received from [document] with data [null].",
+        assertEquals(
+            "Event [org.xwiki.bridge.event.DocumentUpdatedEvent] received from [document] with data [context].",
             this.logCapture.getMessage(0));
         assertEquals(Level.WARN, this.logCapture.getLogEvent(1).getLevel());
         assertEquals(
-            "Failed to create a Job for the Event [org.xwiki.bridge.event.DocumentCreatedEvent] received from [document] with data [null]. Cause: [JobException: ]",
+            "Failed to create a Job for the Event [org.xwiki.bridge.event.DocumentUpdatedEvent] received from " 
+                + "[document] with data [context]. Cause: [JobException: ]",
             this.logCapture.getMessage(1));
     }
 }

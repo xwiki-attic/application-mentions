@@ -71,26 +71,18 @@ public class MentionsUpdatedEventListener extends AbstractEventListener
     @Override
     public void onEvent(Event event, Object source, Object data)
     {
-        /**
-         * TODO: move to an async task
-         * TODO: identify changes.
-         * - on document body [OK]
-         * - on AWM field
-         * - new comments
-         * - updated comments
-         * - new annotations
-         * - updated annotations
-         */
-        this.logger.debug("Event [{}] received from [{}] with data [{}].", event, source, data);
+        this.logger.debug("Event [{}] received from [{}] with data [{}].",
+            DocumentUpdatedEvent.class.getName(), source, data);
+
+        XWikiDocument doc = (XWikiDocument) source;
+        XWikiContext ctx = (XWikiContext) data;
+
         try {
-            XWikiDocument doc = (XWikiDocument) source;
-            XWikiContext ctx = (XWikiContext) data;
-            this.jobExecutor.execute(ASYNC_REQUEST_TYPE,
-                new MentionsUpdatedRequest<>(doc.getAuthorReference(), doc.getDocumentReference(),
-                    ctx.getDoc().getXDOM(), doc.getXDOM()));
+            this.jobExecutor.execute(ASYNC_REQUEST_TYPE, new MentionsUpdatedRequest(doc, ctx));
         } catch (JobException e) {
-            this.logger.warn("Failed to create a Job for the Event [{}] received from [{}]. Cause: [{}]", event, source,
-                getRootCauseMessage(e));
+            this.logger.warn(
+                "Failed to create a Job for the Event [{}] received from [{}] with data [{}]. Cause: [{}]",
+                DocumentUpdatedEvent.class.getName(), source, data, getRootCauseMessage(e));
         }
     }
 }

@@ -19,7 +19,11 @@
  */
 package org.xwiki.contrib.mentions.internal.async.jobs;
 
+import java.io.StringReader;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -35,7 +39,16 @@ import org.xwiki.contrib.mentions.internal.async.MentionsCreatedStatus;
 import org.xwiki.job.AbstractJob;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.rendering.block.MacroBlock;
+import org.xwiki.rendering.block.XDOM;
+import org.xwiki.rendering.parser.ParseException;
+import org.xwiki.rendering.parser.Parser;
 
+import com.xpn.xwiki.doc.XWikiDocument;
+import com.xpn.xwiki.objects.BaseObject;
+import com.xpn.xwiki.objects.LargeStringProperty;
+
+import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCauseMessage;
+import static org.xwiki.contrib.mentions.events.MentionEvent.EVENT_TYPE;
 import static org.xwiki.contrib.mentions.internal.async.jobs.MentionsCreateJob.ASYNC_REQUEST_TYPE;
 
 /**
@@ -46,7 +59,7 @@ import static org.xwiki.contrib.mentions.internal.async.jobs.MentionsCreateJob.A
  */
 @Component
 @Named(ASYNC_REQUEST_TYPE)
-public class MentionsCreateJob extends AbstractJob<MentionsCreatedRequest<?>, MentionsCreatedStatus>
+public class MentionsCreateJob extends AbstractJob<MentionsCreatedRequest, MentionsCreatedStatus>
 {
     /**
      * The name of the job.
@@ -59,26 +72,71 @@ public class MentionsCreateJob extends AbstractJob<MentionsCreatedRequest<?>, Me
     @Inject
     private MentionXDOMService xdomService;
 
+    @Inject
+    @Named("xwiki/2.1")
+    private Parser parser;
+
     @Override
     protected void runInternal()
     {
-        MentionsCreatedRequest<?> request = this.getRequest();
-        this.xdomService.extractPayload(request.getPayload()).ifPresent(xdom -> {
-            DocumentReference authorReference = request.getAuthorReference();
-            List<MacroBlock> blocks = this.xdomService.listMentionMacros(xdom);
-            for (MacroBlock macro : blocks) {
-                // TODO: deal with group members.
-                // TODO: deal with targets outside the system.
-                String identifier = macro.getParameter("identifier");
-                Set<String> identity = this.identityService.resolveIdentity(identifier);
-                MentionEventParams params = new MentionEventParams()
-                                                .setUserReference(authorReference.toString())
-                                                .setDocumentReference(request.getDocumentReference().toString());
-                MentionEvent event = new MentionEvent(identity, params);
-                MentionsCreateJob.this.observationManager
-                    .notify(event, "org.xwiki.contrib:mentions-notifications", MentionEvent.EVENT_TYPE);
+        MentionsCreatedRequest request = this.getRequest();
+        XWikiDocument doc = request.getDoc();
+        DocumentReference authorReference = doc.getAuthorReference();
+        DocumentReference documentReference = doc.getDocumentReference();
+
+        handleMentions(doc.getXDOM(), authorReference, documentReference);
+
+        traverseXObjects(doc.getXObjects(), authorReference, documentReference);
+    }
+
+    private void handleMentions(XDOM xdom, DocumentReference authorReference,
+        DocumentReference documentReference)
+    {
+        List<MacroBlock> blocks = this.xdomService.listMentionMacros(xdom);
+        for (MacroBlock macro : blocks) {
+            // TODO: deal with group members.
+            // TODO: deal with targets outside the system.
+            String identifier = macro.getParameter("identifier");
+            Set<String> identity = this.identityService.resolveIdentity(identifier);
+            MentionEventParams params = new MentionEventParams()
+                                            .setUserReference(authorReference.toString())
+                                            .setDocumentReference(documentReference.toString());
+            MentionEvent event = new MentionEvent(identity, params);
+            MentionsCreateJob.this.observationManager
+                .notify(event, "org.xwiki.contrib:mentions-notifications", EVENT_TYPE);
+        }
+    }
+
+    @SuppressWarnings("checkstyle:LineLength")
+    private void traverseXObjects(Map<DocumentReference, List<BaseObject>> xObjects, DocumentReference authorReference,
+        DocumentReference documentReference)
+    {
+        for (Entry<DocumentReference, List<BaseObject>> entry : xObjects.entrySet()) {
+            for (BaseObject baseObject : entry.getValue()) {
+                if (baseObject != null) {
+                    for (Object o : baseObject.getProperties()) {
+                        if (o instanceof LargeStringProperty) {
+                            parse(((LargeStringProperty) o).getValue())
+                                .ifPresent(xdom -> handleMentions(xdom, authorReference, documentReference));
+                        }
+                    }
+                }
             }
-        });
+        }
+    }
+
+    private Optional<XDOM> parse(String payload)
+    {
+        Optional<XDOM> oxdom;
+        try {
+            XDOM xdom = this.parser.parse(new StringReader(payload));
+            oxdom = Optional.of(xdom);
+        } catch (ParseException e) {
+            this.logger
+                .warn("Failed to parse the payload [{}]. Cause [{}].", payload, getRootCauseMessage(e));
+            oxdom = Optional.empty();
+        }
+        return oxdom;
     }
 
     @Override

@@ -59,6 +59,6 @@ public class MentionEventDescriptor implements RecordableEventDescriptor
     @Override
     public String getApplicationIcon()
     {
-        return "at";
+        return "bell";
     }
 }

@@ -19,27 +19,18 @@
  */
 package org.xwiki.contrib.mentions.internal;
 
-import java.io.StringReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
-import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Singleton;
 
-import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.contrib.mentions.MentionXDOMService;
 import org.xwiki.rendering.block.Block;
 import org.xwiki.rendering.block.MacroBlock;
 import org.xwiki.rendering.block.XDOM;
-import org.xwiki.rendering.parser.ParseException;
-import org.xwiki.rendering.parser.Parser;
-
-import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCauseMessage;
 
 /**
  * Default implementation of {@link MentionXDOMService}.
@@ -54,36 +45,6 @@ public class DefaultMentionXDOMService implements MentionXDOMService
     private static final String MENTION_MACRO_NAME = "mention";
 
     private static final String IDENTIFIER_PARAM_NAME = "identifier";
-
-    @Inject
-    @Named("xwiki/2.1")
-    private Parser parser;
-
-    @Inject
-    private Logger logger;
-
-    @Override
-    public Optional<XDOM> extractPayload(Object payload)
-    {
-        Optional<XDOM> ret;
-        if (payload instanceof XDOM) {
-            ret = Optional.of((XDOM) payload);
-        } else if (payload instanceof String) {
-            try {
-                XDOM xdom = this.parser.parse(new StringReader((String) payload));
-                ret = Optional.of(xdom);
-            } catch (ParseException e) {
-                this.logger.warn("Failed to parse the payload [{}]. Cause [{}].", payload, getRootCauseMessage(e));
-                ret = Optional.empty();
-            }
-        } else {
-            this.logger
-                .warn("Unknow payload type [{}].", 
-                    Optional.ofNullable(payload).map(Object::getClass).orElse(null));
-            ret = Optional.empty();
-        }
-        return ret;
-    }
 
     private static boolean matchMentionMacro(Block block)
     {
