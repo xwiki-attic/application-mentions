@@ -19,50 +19,125 @@
  */
 package org.xwiki.contrib.mentions.internal.async;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.xwiki.job.AbstractRequest;
-
-import com.xpn.xwiki.XWikiContext;
-import com.xpn.xwiki.doc.XWikiDocument;
+import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.rendering.block.XDOM;
+import org.xwiki.text.XWikiToStringBuilder;
 
 /**
  * Mention update request, send to create a mention analysis async job.
  *
  * @version $Id$
  * @since 1.0
+ * @param <T> Type of payload, expected to be either {@link XDOM} or {@link String}.
  */
-public class MentionsUpdatedRequest extends AbstractRequest
+public class MentionsUpdatedRequest<T> extends AbstractRequest
 {
-    private final XWikiDocument document;
+    private final DocumentReference authorReference;
 
-    private final XWikiContext ctx;
+    private final DocumentReference documentReference;
+
+    private final T oldPayload;
+
+    private final T newPayload;
 
     /**
      * Default constructor.
      *
-     * @param document the updated document.
-     * @param ctx the context of the update.
+     * The payload is expected to be either {@link XDOM} or {@link String}.
+     *
+     * @param authorReference Reference of the author of the mention.
+     * @param documentReference Document in which the mention occurred.
+     * @param oldPayload The payload of the document in which the mention occurred, before it was edited.
+     * @param newPayload The payload of the document in which the mention occurred, once edited.
      */
-    public MentionsUpdatedRequest(XWikiDocument document, XWikiContext ctx)
+    public MentionsUpdatedRequest(DocumentReference authorReference, DocumentReference documentReference, T oldPayload,
+        T newPayload)
     {
-        this.document = document;
-        this.ctx = ctx;
+        this.authorReference = authorReference;
+        this.documentReference = documentReference;
+        this.oldPayload = oldPayload;
+        this.newPayload = newPayload;
     }
 
     /**
      *
-     * @return the updated document.
+     * @return Reference of the author of the mention.
      */
-    public XWikiDocument getDocument()
+    public DocumentReference getAuthorReference()
     {
-        return document;
+        return this.authorReference;
     }
 
     /**
      *
-     * @return the context of the update.
+     * @return Document in which the mention occurred.
      */
-    public XWikiContext getCtx()
+    public DocumentReference getDocumentReference()
     {
-        return ctx;
+        return this.documentReference;
+    }
+
+    /**
+     *
+     * @return The payload of the document in which the mention occurred, before it was edited.
+     */
+    public T getOldPayload()
+    {
+        return this.oldPayload;
+    }
+
+    /**
+     *
+     * @return The payload of the document in which the mention occurred, once edited.
+     */
+    public T getNewPayload()
+    {
+        return this.newPayload;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) {
+            return true;
+        }
+
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        MentionsUpdatedRequest<?> that = (MentionsUpdatedRequest<?>) o;
+
+        return new EqualsBuilder()
+                   .append(this.authorReference, that.authorReference)
+                   .append(this.documentReference, that.documentReference)
+                   .append(this.oldPayload, that.oldPayload)
+                   .append(this.newPayload, that.newPayload)
+                   .isEquals();
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return new HashCodeBuilder(17, 37)
+                   .append(this.authorReference)
+                   .append(this.documentReference)
+                   .append(this.oldPayload)
+                   .append(this.newPayload)
+                   .toHashCode();
+    }
+
+    @Override
+    public String toString()
+    {
+        return new XWikiToStringBuilder(this)
+                   .append("authorReference", this.getAuthorReference())
+                   .append("documentReference", this.getDocumentReference())
+                   .append("oldPayload", this.getOldPayload())
+                   .append("newPayload", this.getNewPayload())
+                   .build();
     }
 }

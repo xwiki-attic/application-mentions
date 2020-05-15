@@ -27,7 +27,6 @@ import org.xwiki.job.JobException;
 import org.xwiki.job.JobExecutor;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.rendering.block.XDOM;
-import org.xwiki.test.LogLevel;
 import org.xwiki.test.junit5.LogCaptureExtension;
 import org.xwiki.test.junit5.mockito.ComponentTest;
 import org.xwiki.test.junit5.mockito.InjectMockComponents;
@@ -42,6 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.xwiki.test.LogLevel.DEBUG;
 
 /**
  * Test of {@link MentionsCreatedEventListener}.
@@ -50,10 +50,10 @@ import static org.mockito.Mockito.when;
  * @since 1.0
  */
 @ComponentTest
-class MentionsCreatedEventListenerTest
+public class MentionsCreatedEventListenerTest
 {
     @RegisterExtension
-    LogCaptureExtension logCapture = new LogCaptureExtension(LogLevel.DEBUG);
+    LogCaptureExtension logCapture = new LogCaptureExtension(DEBUG);
 
     @InjectMockComponents
     private MentionsCreatedEventListener listener;
@@ -77,10 +77,11 @@ class MentionsCreatedEventListenerTest
         when(this.document.getXDOM()).thenReturn(xdom);
 
         this.listener.onEvent(event, this.document, null);
-        verify(this.jobExecutor).execute("mentions-create-job", new MentionsCreatedRequest(authorReference, dr, xdom));
+        verify(this.jobExecutor)
+            .execute("mentions-create-job", new MentionsCreatedRequest<>(authorReference, dr, xdom));
         assertEquals(1, this.logCapture.size());
         assertEquals(Level.DEBUG, this.logCapture.getLogEvent(0).getLevel());
-        assertEquals("Event [DocumentCreatedEvent] received from [document] with data [null].",
+        assertEquals("Event [org.xwiki.bridge.event.DocumentCreatedEvent] received from [document] with data [null].",
             this.logCapture.getMessage(0));
     }
 
@@ -97,16 +98,16 @@ class MentionsCreatedEventListenerTest
         when(this.document.getXDOM()).thenReturn(xdom);
 
         doThrow(new JobException(null, null)).when(this.jobExecutor)
-            .execute("mentions-create-job", new MentionsCreatedRequest(authorReference, dr, xdom));
+            .execute("mentions-create-job", new MentionsCreatedRequest<>(authorReference, dr, xdom));
 
         this.listener.onEvent(event, this.document, null);
         assertEquals(2, this.logCapture.size());
         assertEquals(Level.DEBUG, this.logCapture.getLogEvent(0).getLevel());
         assertEquals(Level.WARN, this.logCapture.getLogEvent(1).getLevel());
-        assertEquals("Event [DocumentCreatedEvent] received from [document] with data [null].",
+        assertEquals("Event [org.xwiki.bridge.event.DocumentCreatedEvent] received from [document] with data [null].",
             this.logCapture.getMessage(0));
         assertEquals(
-            "Failed to create a Job for the Event [DocumentCreatedEvent] received from [document] with data [null]. Cause: [JobException: ]",
+            "Failed to create a Job for the Event [org.xwiki.bridge.event.DocumentCreatedEvent] received from [document] with data [null]. Cause: [JobException: ]",
             this.logCapture.getMessage(1));
     }
 }

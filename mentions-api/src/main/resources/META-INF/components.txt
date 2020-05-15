@@ -1,4 +1,6 @@
 org.xwiki.contrib.mentions.internal.async.jobs.MentionsCreateJob
 org.xwiki.contrib.mentions.internal.async.jobs.MentionsUpdateJob
+org.xwiki.contrib.mentions.internal.DefaultMentionIdentityService
+org.xwiki.contrib.mentions.internal.DefaultMentionXDOMService
 org.xwiki.contrib.mentions.internal.listeners.MentionsCreatedEventListener
 org.xwiki.contrib.mentions.internal.listeners.MentionsUpdatedEventListener

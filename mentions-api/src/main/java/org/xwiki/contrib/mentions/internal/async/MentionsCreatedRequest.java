@@ -31,27 +31,31 @@ import org.xwiki.text.XWikiToStringBuilder;
  *
  * @version $Id$
  * @since 1.0
+ * @param <T> Type of the payload, expected to be either {@link XDOM} or {@link String}.
  */
-public class MentionsCreatedRequest extends AbstractRequest
+public class MentionsCreatedRequest<T> extends AbstractRequest
 {
     private final DocumentReference authorReference;
 
     private final DocumentReference documentReference;
 
-    private final XDOM xdom;
+    private final T payload;
 
     /**
      * Default constructor.
+     *
+     * The payload is expected to be either {@link XDOM} or {@link String}.
+     *
      * @param authorReference Reference of the author of the mention.
      * @param documentReference Document in which the mention occurred.
-     * @param xdom The {@link XDOM} of the document in which the mention occurred.
+     * @param payload The payload of the document in which the mention occurred.
      */
     public MentionsCreatedRequest(DocumentReference authorReference,
-        DocumentReference documentReference, XDOM xdom)
+        DocumentReference documentReference, T payload)
     {
         this.authorReference = authorReference;
         this.documentReference = documentReference;
-        this.xdom = xdom;
+        this.payload = payload;
     }
 
     /**
@@ -73,12 +77,13 @@ public class MentionsCreatedRequest extends AbstractRequest
     }
 
     /**
+     * The payload is expected to be either {@link XDOM} or {@link String}.
      *
-     * @return The {@link XDOM} of the document in which the mention occurred.
+     * @return The payload  of the document in which the mention occurred.
      */
-    public XDOM getXDOM()
+    public T getPayload()
     {
-        return this.xdom;
+        return this.payload;
     }
 
     @Override
@@ -97,7 +102,7 @@ public class MentionsCreatedRequest extends AbstractRequest
         return new EqualsBuilder()
                    .append(this.authorReference, that.authorReference)
                    .append(this.documentReference, that.documentReference)
-                   .append(this.xdom, that.xdom)
+                   .append(this.payload, that.payload)
                    .isEquals();
     }
 
@@ -107,7 +112,7 @@ public class MentionsCreatedRequest extends AbstractRequest
         return new HashCodeBuilder(17, 37)
                    .append(this.authorReference)
                    .append(this.documentReference)
-                   .append(this.xdom)
+                   .append(this.payload)
                    .toHashCode();
     }
 
@@ -117,7 +122,7 @@ public class MentionsCreatedRequest extends AbstractRequest
         return new XWikiToStringBuilder(this)
                    .append("authorReference", this.getAuthorReference())
                    .append("documentReference", this.getDocumentReference())
-                   .append("xdom", this.getXDOM())
+                   .append("payload", this.getPayload())
                    .build();
     }
 }

@@ -19,12 +19,23 @@
  */
 package org.xwiki.contrib.mentions.internal.async.jobs;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.xwiki.component.annotation.Component;
+import org.xwiki.contrib.mentions.MentionIdentityService;
+import org.xwiki.contrib.mentions.MentionXDOMService;
+import org.xwiki.contrib.mentions.events.MentionEvent;
+import org.xwiki.contrib.mentions.events.MentionEventParams;
 import org.xwiki.contrib.mentions.internal.async.MentionsUpdatedRequest;
 import org.xwiki.contrib.mentions.internal.async.MentionsUpdatedStatus;
 import org.xwiki.job.AbstractJob;
+import org.xwiki.rendering.block.MacroBlock;
+import org.xwiki.rendering.block.XDOM;
 
 import static org.xwiki.contrib.mentions.internal.async.jobs.MentionsUpdateJob.ASYNC_REQUEST_TYPE;
 
@@ -36,21 +47,49 @@ import static org.xwiki.contrib.mentions.internal.async.jobs.MentionsUpdateJob.A
  */
 @Component
 @Named(ASYNC_REQUEST_TYPE)
-public class MentionsUpdateJob extends AbstractJob<MentionsUpdatedRequest, MentionsUpdatedStatus>
+public class MentionsUpdateJob extends AbstractJob<MentionsUpdatedRequest<?>, MentionsUpdatedStatus>
 {
     /**
      * The name of the job.
      */
     public static final String ASYNC_REQUEST_TYPE = "mentions-update-job";
 
+    @Inject
+    private MentionIdentityService identityService;
+
+    @Inject
+    private MentionXDOMService xdomService;
+
     @Override
-    protected void runInternal() throws Exception
+    protected void runInternal()
     {
-        MentionsUpdatedRequest request = this.getRequest();
-        /* 
-        TODO: add a traversal of the updated document, compare to the previous version 
-        and send only notifications for new mentions. 
-        */
+        MentionsUpdatedRequest<?> request = this.getRequest();
+
+        Optional<XDOM> optOldXdom = this.xdomService.extractPayload(request.getOldPayload());
+        Optional<XDOM> optNewXdom = this.xdomService.extractPayload(request.getNewPayload());
+
+        optOldXdom.ifPresent(oldXdom -> optNewXdom.ifPresent(newXdom -> {
+            List<MacroBlock> oldMentions = this.xdomService.listMentionMacros(oldXdom);
+            List<MacroBlock> newMentions = this.xdomService.listMentionMacros(newXdom);
+
+            Map<String, Long> oldCounts = this.xdomService.countByIdentifier(oldMentions);
+            Map<String, Long> newCounts = this.xdomService.countByIdentifier(newMentions);
+
+            // for each user, we check its number of mentions and compare it to the same number on the 
+            // old document (or 0 if the user wan't mentionned before).
+            // If the number increased, a notification is send.
+            newCounts.forEach((k, v) -> {
+                Long oldCount = oldCounts.getOrDefault(k, 0L);
+                if (v > oldCount) {
+                    MentionEventParams params = new MentionEventParams()
+                                                    .setUserReference(request.getAuthorReference().toString())
+                                                    .setDocumentReference(request.getDocumentReference().toString());
+                    MentionEvent event = new MentionEvent(this.identityService.resolveIdentity(k), params);
+                    MentionsUpdateJob.this.observationManager
+                        .notify(event, "org.xwiki.contrib:mentions-notifications", MentionEvent.EVENT_TYPE);
+                }
+            });
+        }));
     }
 
     @Override

@@ -20,14 +20,16 @@ package org.xwiki.contrib.mentions.internal.async.jobs;/*
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.xwiki.contrib.mentions.MentionIdentityService;
+import org.xwiki.contrib.mentions.MentionXDOMService;
 import org.xwiki.contrib.mentions.events.MentionEvent;
 import org.xwiki.contrib.mentions.events.MentionEventParams;
 import org.xwiki.contrib.mentions.internal.async.MentionsCreatedRequest;
 import org.xwiki.model.reference.DocumentReference;
-import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.observation.ObservationManager;
 import org.xwiki.rendering.block.MacroBlock;
 import org.xwiki.rendering.block.NewLineBlock;
@@ -55,7 +57,7 @@ import static org.mockito.Mockito.when;
  * @since 1.0
  */
 @ComponentTest
-class MentionsCreateJobTest
+public class MentionsCreateJobTest
 {
     @InjectMockComponents
     private MentionsCreateJob job;
@@ -66,11 +68,17 @@ class MentionsCreateJobTest
     @Mock
     private XWikiContext context;
 
-    @MockComponent
-    private DocumentReferenceResolver<String> documentReferenceResolver;
+    // @MockComponent
+    // private DocumentReferenceResolver<String> documentReferenceResolver;
 
     @MockComponent
     protected ObservationManager observationManager;
+
+    @MockComponent
+    private MentionXDOMService xdomService;
+
+    @MockComponent
+    private MentionIdentityService identityService;
 
     @Test
     void runInternal()
@@ -80,16 +88,21 @@ class MentionsCreateJobTest
         DocumentReference documentReference = new DocumentReference("xwiki", "XWiki", "Doc");
         HashMap<String, String> mentionParams = new HashMap<>();
         mentionParams.put("identifier", "XWiki.U1");
+        MacroBlock mention = new MacroBlock("mention", mentionParams, false);
         XDOM xdom = new XDOM(singletonList(new ParagraphBlock(asList(
             new NewLineBlock(),
             new MacroBlock("macro0", new HashMap<>(), false),
             new NewLineBlock(),
-            new MacroBlock("mention", mentionParams, false)
+            mention
         ))));
-        
-        when(this.documentReferenceResolver.resolve("XWiki.U1")).thenReturn(mentionnedReference);
 
-        this.job.initialize(new MentionsCreatedRequest(authorReference, documentReference, xdom));
+        when(this.xdomService.extractPayload(xdom)).thenReturn(Optional.of(xdom));
+        when(this.xdomService.listMentionMacros(xdom)).thenReturn(singletonList(mention));
+        HashSet<String> value = new HashSet<>();
+        value.add("xwiki:XWiki.U1");
+        when(this.identityService.resolveIdentity("XWiki.U1")).thenReturn(value);
+
+        this.job.initialize(new MentionsCreatedRequest<>(authorReference, documentReference, xdom));
         this.job.runInternal();
 
         HashSet<String> targets = new HashSet<>();
@@ -110,7 +123,7 @@ class MentionsCreateJobTest
             new NewLineBlock()
         ))));
 
-        this.job.initialize(new MentionsCreatedRequest(authorReference, documentReference, xdom));
+        this.job.initialize(new MentionsCreatedRequest<>(authorReference, documentReference, xdom));
         this.job.runInternal();
 
         verify(this.observationManager, never()).notify(any(), any(), any());

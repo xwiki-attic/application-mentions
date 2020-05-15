@@ -32,7 +32,7 @@
   <name>XWiki Mentions - API</name>
   <description>API to support the mention of users</description>
   <properties>
-    <xwiki.jacoco.instructionRatio>0.52</xwiki.jacoco.instructionRatio>
+    <xwiki.jacoco.instructionRatio>0.39</xwiki.jacoco.instructionRatio>
     <xwiki.pitest.mutationThreshold>67</xwiki.pitest.mutationThreshold>
   </properties>
   <dependencies>
