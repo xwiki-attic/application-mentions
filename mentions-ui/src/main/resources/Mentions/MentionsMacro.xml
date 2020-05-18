@@ -398,7 +398,7 @@
       <defaultCategory/>
     </property>
     <property>
-      <description>Insert a user mention</description>
+      <description>Insert a user mention.</description>
     </property>
     <property>
       <id>mention</id>
