@@ -53,7 +53,7 @@ public class MentionEventDescriptor implements RecordableEventDescriptor
     @Override
     public String getDescription()
     {
-        return "mentions.mention.event.desciption";
+        return "mentions.mention.event.description";
     }
 
     @Override

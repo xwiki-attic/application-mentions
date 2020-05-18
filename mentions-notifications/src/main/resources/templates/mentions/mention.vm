@@ -45,12 +45,12 @@
 
 #define ($content)
 <div class="notification-description">
-    <div class="activity-type">$services.localization.render('mention.event.mention.type')</div>
+    <div class="activity-type">$services.localization.render('mentions.event.mention.type')</div>
     <div class="activity-summary">
         #if ($compositeEvent.events.size() == 1)
-            You have received one mention.
+            $services.localization.render('mentions.event.mention.summary.singular')
         #else
-            You have received $compositeEvent.events.size() mentions.
+            $services.localization.render('mentions.event.mention.summary.plural', $compositeEvent.events.size())
         #end
     </div>
     <div><small class="text-muted">$compositeEventDate</small></div>
@@ -63,7 +63,7 @@
             #set ($eventParams = $compositeEventParams.get($event))
             ## TODO: define variation for group mention
             ## TODO: add an achor to the specific place on the document.
-            #set ($description = "mentionned you on page <a href='$eventParams.getDocumentURL()'>$eventParams.getDocument().getTitle()</a>")
+            #set ($description = "$services.localization.render('mentions.event.mention.description') <a href='$eventParams.getDocumentURL()'>$eventParams.getDocument().getTitle()</a>")
             #displayEventDetail($event $description)
         #end
     #end
