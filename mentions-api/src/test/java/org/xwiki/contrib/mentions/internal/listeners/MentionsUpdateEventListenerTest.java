@@ -39,6 +39,7 @@ import ch.qos.logback.classic.Level;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.xwiki.test.LogLevel.DEBUG;
 
 /**
@@ -57,7 +58,10 @@ public class MentionsUpdateEventListenerTest
     private MentionsUpdatedEventListener listener;
 
     @Mock
-    private XWikiDocument document;
+    private XWikiDocument newDoc;
+
+    @Mock
+    private XWikiDocument oldDoc;
 
     @Mock
     private XWikiContext context;
@@ -69,39 +73,47 @@ public class MentionsUpdateEventListenerTest
     void onEvent() throws Exception
     {
         DocumentReference dr = new DocumentReference("xwiki", "XWiki", "Doc");
+        DocumentReference ar = new DocumentReference("xwiki", "XWiki", "Author");
         DocumentUpdatedEvent event = new DocumentUpdatedEvent(dr);
 
-        this.listener.onEvent(event, this.document, this.context);
+        when(this.newDoc.getOriginalDocument()).thenReturn(this.oldDoc);
+        when(this.context.getUserReference()).thenReturn(ar);
+
+        this.listener.onEvent(event, this.newDoc, this.context);
 
         assertEquals(1, this.logCapture.size());
         assertEquals(Level.DEBUG, this.logCapture.getLogEvent(0).getLevel());
         assertEquals(
-            "Event [org.xwiki.bridge.event.DocumentUpdatedEvent] received from [document] with data [context].",
+            "Event [org.xwiki.bridge.event.DocumentUpdatedEvent] received from [newDoc] with data [context].",
             this.logCapture.getMessage(0));
         verify(this.jobExecutor)
-            .execute("mentions-update-job", new MentionsUpdatedRequest(this.document, this.context));
+            .execute("mentions-update-job", new MentionsUpdatedRequest(this.newDoc, this.oldDoc, ar));
     }
 
     @Test
     void onEventError() throws Exception
     {
         DocumentReference dr = new DocumentReference("xwiki", "XWiki", "Doc");
+        DocumentReference ar = new DocumentReference("xwiki", "XWiki", "Author");
         DocumentUpdatedEvent event = new DocumentUpdatedEvent(dr);
 
         doThrow(new JobException(null, null)).when(this.jobExecutor)
-            .execute("mentions-update-job", new MentionsUpdatedRequest(this.document, this.context));
+            .execute("mentions-update-job", new MentionsUpdatedRequest(this.newDoc, this.oldDoc, ar));
 
-        this.listener.onEvent(event, this.document, this.context);
+        when(this.newDoc.getOriginalDocument()).thenReturn(this.oldDoc);
+        when(this.context.getUserReference()).thenReturn(ar);
+
+        this.listener.onEvent(event, this.newDoc, this.context);
 
         assertEquals(2, this.logCapture.size());
         assertEquals(Level.DEBUG, this.logCapture.getLogEvent(0).getLevel());
         assertEquals(
-            "Event [org.xwiki.bridge.event.DocumentUpdatedEvent] received from [document] with data [context].",
+            "Event [org.xwiki.bridge.event.DocumentUpdatedEvent] received from [newDoc] with data [context].",
             this.logCapture.getMessage(0));
         assertEquals(Level.WARN, this.logCapture.getLogEvent(1).getLevel());
         assertEquals(
-            "Failed to create a Job for the Event [org.xwiki.bridge.event.DocumentUpdatedEvent] received from " 
-                + "[document] with data [context]. Cause: [JobException: ]",
+            "Failed to create a Job for the Event [org.xwiki.bridge.event.DocumentUpdatedEvent] received from "
+                + "[newDoc] with data [context]. Cause: [JobException: ]",
             this.logCapture.getMessage(1));
     }
 }

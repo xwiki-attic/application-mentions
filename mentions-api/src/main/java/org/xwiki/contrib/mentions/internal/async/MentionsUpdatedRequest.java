@@ -22,9 +22,9 @@ package org.xwiki.contrib.mentions.internal.async;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.xwiki.job.AbstractRequest;
+import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.text.XWikiToStringBuilder;
 
-import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 
 /**
@@ -35,37 +35,49 @@ import com.xpn.xwiki.doc.XWikiDocument;
  */
 public class MentionsUpdatedRequest extends AbstractRequest
 {
-    private final XWikiDocument doc;
+    private final XWikiDocument newDoc;
 
-    private final XWikiContext ctx;
+    private final XWikiDocument oldDoc;
+
+    private final DocumentReference authorReference;
 
     /**
-     *
-     * @param doc updated document.
-     * @param ctx updated document context.
+     *  @param newDoc the document after the update.
+     * @param oldDoc the document before the update.
+     * @param authorReference the author of the update.
      */
-    public MentionsUpdatedRequest(XWikiDocument doc, XWikiContext ctx)
+    public MentionsUpdatedRequest(XWikiDocument newDoc, XWikiDocument oldDoc, DocumentReference authorReference)
     {
-        this.doc = doc;
-        this.ctx = ctx;
+        this.newDoc = newDoc;
+        this.oldDoc = oldDoc;
+        this.authorReference = authorReference;
     }
 
     /**
      *
-     * @return updated document
+     * @return the document after the update.
      */
-    public XWikiDocument getDoc()
+    public XWikiDocument getNewDoc()
     {
-        return this.doc;
+        return this.newDoc;
     }
 
     /**
      *
-     * @return the updated document context.
+     * @return the document before the update.
      */
-    public XWikiContext getCtx()
+    public XWikiDocument getOldDoc()
     {
-        return this.ctx;
+        return this.oldDoc;
+    }
+
+    /**
+     *
+     * @return the author of the update.
+     */
+    public DocumentReference getAuthorReference()
+    {
+        return this.authorReference;
     }
 
     @Override
@@ -82,8 +94,9 @@ public class MentionsUpdatedRequest extends AbstractRequest
         MentionsUpdatedRequest that = (MentionsUpdatedRequest) o;
 
         return new EqualsBuilder()
-                   .append(this.doc, that.doc)
-                   .append(this.ctx, that.ctx)
+                   .append(this.newDoc, that.newDoc)
+                   .append(this.oldDoc, that.oldDoc)
+                   .append(this.authorReference, that.authorReference)
                    .isEquals();
     }
 
@@ -91,8 +104,9 @@ public class MentionsUpdatedRequest extends AbstractRequest
     public int hashCode()
     {
         return new HashCodeBuilder(17, 37)
-                   .append(this.doc)
-                   .append(this.ctx)
+                   .append(this.newDoc)
+                   .append(this.oldDoc)
+                   .append(this.authorReference)
                    .toHashCode();
     }
 
@@ -100,8 +114,9 @@ public class MentionsUpdatedRequest extends AbstractRequest
     public String toString()
     {
         return new XWikiToStringBuilder(this)
-                   .append("doc", this.getDoc())
-                   .append("ctx", this.getCtx())
+                   .append("newDoc", this.getNewDoc())
+                   .append("oldDoc", this.getOldDoc())
+                   .append("authorReference", this.getAuthorReference())
                    .build();
     }
 }

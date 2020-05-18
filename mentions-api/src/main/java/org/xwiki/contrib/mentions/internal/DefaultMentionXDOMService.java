@@ -19,18 +19,27 @@
  */
 package org.xwiki.contrib.mentions.internal;
 
+import java.io.StringReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
 
+import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.contrib.mentions.MentionXDOMService;
 import org.xwiki.rendering.block.Block;
 import org.xwiki.rendering.block.MacroBlock;
 import org.xwiki.rendering.block.XDOM;
+import org.xwiki.rendering.parser.ParseException;
+import org.xwiki.rendering.parser.Parser;
+
+import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCauseMessage;
 
 /**
  * Default implementation of {@link MentionXDOMService}.
@@ -45,6 +54,13 @@ public class DefaultMentionXDOMService implements MentionXDOMService
     private static final String MENTION_MACRO_NAME = "mention";
 
     private static final String IDENTIFIER_PARAM_NAME = "identifier";
+
+    @Inject
+    private Logger logger;
+
+    @Inject
+    @Named("xwiki/2.1")
+    private Parser parser;
 
     private static boolean matchMentionMacro(Block block)
     {
@@ -66,5 +82,20 @@ public class DefaultMentionXDOMService implements MentionXDOMService
             ret.merge(identifier, 1L, Long::sum);
         }
         return ret;
+    }
+
+    @Override
+    public Optional<XDOM> parse(String payload)
+    {
+        Optional<XDOM> oxdom;
+        try {
+            XDOM xdom = this.parser.parse(new StringReader(payload));
+            oxdom = Optional.of(xdom);
+        } catch (ParseException e) {
+            this.logger
+                .warn("Failed to parse the payload [{}]. Cause [{}].", payload, getRootCauseMessage(e));
+            oxdom = Optional.empty();
+        }
+        return oxdom;
     }
 }

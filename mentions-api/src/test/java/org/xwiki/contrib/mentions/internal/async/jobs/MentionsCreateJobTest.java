@@ -18,15 +18,13 @@ package org.xwiki.contrib.mentions.internal.async.jobs;/*
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-import java.io.StringReader;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
-
-import javax.inject.Named;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -41,7 +39,6 @@ import org.xwiki.rendering.block.MacroBlock;
 import org.xwiki.rendering.block.NewLineBlock;
 import org.xwiki.rendering.block.ParagraphBlock;
 import org.xwiki.rendering.block.XDOM;
-import org.xwiki.rendering.parser.Parser;
 import org.xwiki.test.junit5.mockito.ComponentTest;
 import org.xwiki.test.junit5.mockito.InjectMockComponents;
 import org.xwiki.test.junit5.mockito.MockComponent;
@@ -57,7 +54,6 @@ import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.xwiki.contrib.mentions.events.MentionEvent.EVENT_TYPE;
@@ -85,10 +81,6 @@ public class MentionsCreateJobTest
 
     @MockComponent
     private MentionIdentityService identityService;
-
-    @MockComponent
-    @Named("xwiki/2.1")
-    private Parser parser;
 
     @Test
     void runInternal()
@@ -192,7 +184,8 @@ public class MentionsCreateJobTest
         MacroBlock mention = new MacroBlock("mention", parameters, false);
         XDOM xdom1 = new XDOM(singletonList(mention));
         XDOM xdom2 = new XDOM(singletonList(new MacroBlock("macro0", new HashMap<>(), false)));
-        when(this.parser.parse(any(StringReader.class))).thenReturn(xdom1, xdom2);
+        when(this.xdomService.parse("CONTENT 1")).thenReturn(Optional.of(xdom1));
+        when(this.xdomService.parse("CONTENT 2")).thenReturn(Optional.of(xdom2));
 
         when(this.xdomService.listMentionMacros(xdom1)).thenReturn(singletonList(mention));
         when(this.xdomService.listMentionMacros(xdom2)).thenReturn(emptyList());
@@ -204,7 +197,8 @@ public class MentionsCreateJobTest
         this.job.initialize(new MentionsCreatedRequest(this.document));
         this.job.runInternal();
 
-        verify(this.parser, times(2)).parse(any(StringReader.class));
+        verify(this.xdomService).parse("CONTENT 1");
+        verify(this.xdomService).parse("CONTENT 2");
         verify(this.xdomService).listMentionMacros(xdom1);
         verify(this.xdomService).listMentionMacros(xdom2);
         HashSet<String> targets = new HashSet<>();

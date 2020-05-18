@@ -21,6 +21,7 @@ package org.xwiki.contrib.mentions;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.xwiki.component.annotation.Role;
 import org.xwiki.rendering.block.MacroBlock;
@@ -50,4 +51,11 @@ public interface MentionXDOMService
      * @return the map of number of mentions per identifier.
      */
     Map<String, Long> countByIdentifier(List<MacroBlock> mentions);
+
+    /**
+     *
+     * @param payload the string to parse.
+     * @return The result of the parsing. Empty if the parsing failed.
+     */
+    Optional<XDOM> parse(String payload);
 }

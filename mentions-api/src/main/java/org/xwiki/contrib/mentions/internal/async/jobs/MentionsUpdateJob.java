@@ -21,6 +21,8 @@ package org.xwiki.contrib.mentions.internal.async.jobs;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -38,7 +40,10 @@ import org.xwiki.rendering.block.MacroBlock;
 import org.xwiki.rendering.block.XDOM;
 
 import com.xpn.xwiki.doc.XWikiDocument;
+import com.xpn.xwiki.objects.BaseObject;
+import com.xpn.xwiki.objects.LargeStringProperty;
 
+import static java.util.Optional.ofNullable;
 import static org.xwiki.contrib.mentions.internal.async.jobs.MentionsUpdateJob.ASYNC_REQUEST_TYPE;
 
 /**
@@ -66,21 +71,78 @@ public class MentionsUpdateJob extends AbstractJob<MentionsUpdatedRequest, Menti
     protected void runInternal()
     {
         MentionsUpdatedRequest request = this.getRequest();
-        XDOM oldXdom = request.getCtx().getDoc().getXDOM();
-        XWikiDocument newDoc = request.getDoc();
+        XWikiDocument oldDoc = request.getOldDoc();
+        XWikiDocument newDoc = request.getNewDoc();
+        XDOM oldXdom = oldDoc.getXDOM();
         XDOM newXdom = newDoc.getXDOM();
-        DocumentReference authorReference = newDoc.getAuthorReference();
+        DocumentReference authorReference = request.getAuthorReference();
         DocumentReference documentReference = newDoc.getDocumentReference();
 
         handle(oldXdom, newXdom, authorReference, documentReference);
+
+        Map<DocumentReference, List<BaseObject>> xObjects = newDoc.getXObjects();
+        Map<DocumentReference, List<BaseObject>> oldXObjects = oldDoc.getXObjects();
+
+        for (Map.Entry<DocumentReference, List<BaseObject>> entry : xObjects.entrySet()) {
+            List<BaseObject> oldEntry = oldXObjects.get(entry.getKey());
+            for (BaseObject baseObject : entry.getValue()) {
+                handBaseObject(authorReference, documentReference, oldEntry, baseObject);
+            }
+        }
+    }
+
+    private void handBaseObject(DocumentReference authorReference, DocumentReference documentReference,
+        List<BaseObject> oldEntry, BaseObject baseObject)
+    {
+        Optional<BaseObject> oldBaseObject = Optional.ofNullable(oldEntry).flatMap(
+            optOldEntries -> optOldEntries.stream().filter(it -> it.getId() == baseObject.getId()).findAny());
+        if (baseObject != null) {
+            // special treatment on comment object to analyse only the comment field.
+            if (Objects.equals(baseObject.getXClassReference().getLocalDocumentReference(),
+                XWikiDocument.COMMENTSCLASS_REFERENCE))
+            {
+                Optional.<Object>ofNullable(baseObject.getField("comment"))
+                    .ifPresent(it -> handleField(authorReference, documentReference, oldBaseObject,
+                        (LargeStringProperty) it));
+            } else {
+                for (Object o : baseObject.getProperties()) {
+                    if (o instanceof LargeStringProperty) {
+                        handleField(authorReference, documentReference, oldBaseObject, (LargeStringProperty) o);
+                    }
+                }
+            }
+        }
+    }
+
+    private void handleField(DocumentReference authorReference, DocumentReference documentReference,
+        Optional<BaseObject> oldBaseObject, LargeStringProperty lsp)
+    {
+        Optional<XDOM> oldDom = oldBaseObject.flatMap(it -> ofNullable(it.getField(lsp.getName())))
+                                    .filter(it -> it instanceof LargeStringProperty)
+                                    .flatMap(it -> this.xdomService.parse(((LargeStringProperty) it).getValue()));
+        this.xdomService.parse(lsp.getValue()).ifPresent(
+            xdom -> {
+                // can be replaced by ifPresentOrElse for in java 9+ 
+                oldDom.ifPresent(od -> handle(od, xdom, authorReference, documentReference));
+                if (!oldDom.isPresent()) {
+                    handleMissing(xdom, authorReference, documentReference);
+                }
+            });
     }
 
     private void handle(XDOM oldXdom, XDOM newXdom, DocumentReference authorReference,
         DocumentReference documentReference)
     {
+
         List<MacroBlock> oldMentions = this.xdomService.listMentionMacros(oldXdom);
         List<MacroBlock> newMentions = this.xdomService.listMentionMacros(newXdom);
 
+
+        /*
+         * TODO: we have to decide if we want to return a simple count or if we want to return the details list of
+         * occurrences see comments on MentionCreateJob#handleMentions for more details on where to uniformize the
+         * notification behavior.
+         */
         Map<String, Long> oldCounts = this.xdomService.countByIdentifier(oldMentions);
         Map<String, Long> newCounts = this.xdomService.countByIdentifier(newMentions);
 
@@ -90,14 +152,30 @@ public class MentionsUpdateJob extends AbstractJob<MentionsUpdatedRequest, Menti
         newCounts.forEach((k, v) -> {
             Long oldCount = oldCounts.getOrDefault(k, 0L);
             if (v > oldCount) {
-                MentionEventParams params = new MentionEventParams()
-                                                .setUserReference(authorReference.toString())
-                                                .setDocumentReference(documentReference.toString());
-                MentionEvent event = new MentionEvent(this.identityService.resolveIdentity(k), params);
-                MentionsUpdateJob.this.observationManager
-                    .notify(event, "org.xwiki.contrib:mentions-notifications", MentionEvent.EVENT_TYPE);
+                sendNotif(authorReference, documentReference, k);
             }
         });
+    }
+
+    private void handleMissing(XDOM newXdom, DocumentReference authorReference,
+        DocumentReference documentReference)
+    {
+        List<MacroBlock> newMentions = this.xdomService.listMentionMacros(newXdom);
+
+        // the matching element has not be found in the previous version of the document
+        // notification are send unconditionally to all mentioned users.
+        this.xdomService.countByIdentifier(newMentions)
+            .forEach((identity, v) -> sendNotif(authorReference, documentReference, identity));
+    }
+
+    private void sendNotif(DocumentReference authorReference, DocumentReference documentReference, String k)
+    {
+        MentionEventParams params = new MentionEventParams()
+                                        .setUserReference(authorReference.toString())
+                                        .setDocumentReference(documentReference.toString());
+        MentionEvent event = new MentionEvent(this.identityService.resolveIdentity(k), params);
+        MentionsUpdateJob.this.observationManager
+            .notify(event, "org.xwiki.contrib:mentions-notifications", MentionEvent.EVENT_TYPE);
     }
 
     @Override

@@ -19,11 +19,9 @@
  */
 package org.xwiki.contrib.mentions.internal.async.jobs;
 
-import java.io.StringReader;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -40,14 +38,11 @@ import org.xwiki.job.AbstractJob;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.rendering.block.MacroBlock;
 import org.xwiki.rendering.block.XDOM;
-import org.xwiki.rendering.parser.ParseException;
-import org.xwiki.rendering.parser.Parser;
 
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.LargeStringProperty;
 
-import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCauseMessage;
 import static org.xwiki.contrib.mentions.events.MentionEvent.EVENT_TYPE;
 import static org.xwiki.contrib.mentions.internal.async.jobs.MentionsCreateJob.ASYNC_REQUEST_TYPE;
 
@@ -72,10 +67,6 @@ public class MentionsCreateJob extends AbstractJob<MentionsCreatedRequest, Menti
     @Inject
     private MentionXDOMService xdomService;
 
-    @Inject
-    @Named("xwiki/2.1")
-    private Parser parser;
-
     @Override
     protected void runInternal()
     {
@@ -93,6 +84,15 @@ public class MentionsCreateJob extends AbstractJob<MentionsCreatedRequest, Menti
         DocumentReference documentReference)
     {
         List<MacroBlock> blocks = this.xdomService.listMentionMacros(xdom);
+        /*
+         * TODO: for now, a mention is done for each occurent of the macro in the DOM that might be a little wild, but
+         *  if the feature is used as expected that should not be a problem an an user can be interested to know that
+         * he has been mentioned twice in different parts, espacially if two links are send, one for each mention That
+         * might also not be what we want in the case of shorter texts sur as AWM fields for instances. Anyway that has
+         * to be clarifier and uniformized (for instance for now, mentining a user twice in an AWM field creation send
+         * 2 notifs, but adding two mentions in the edit of the same AWM field send only one notif).
+         * TODO: do not forget to add test to validate one behavior or the other
+         */
         for (MacroBlock macro : blocks) {
             // TODO: deal with group members.
             // TODO: deal with targets outside the system.
@@ -107,7 +107,6 @@ public class MentionsCreateJob extends AbstractJob<MentionsCreatedRequest, Menti
         }
     }
 
-    @SuppressWarnings("checkstyle:LineLength")
     private void traverseXObjects(Map<DocumentReference, List<BaseObject>> xObjects, DocumentReference authorReference,
         DocumentReference documentReference)
     {
@@ -116,27 +115,13 @@ public class MentionsCreateJob extends AbstractJob<MentionsCreatedRequest, Menti
                 if (baseObject != null) {
                     for (Object o : baseObject.getProperties()) {
                         if (o instanceof LargeStringProperty) {
-                            parse(((LargeStringProperty) o).getValue())
+                            this.xdomService.parse(((LargeStringProperty) o).getValue())
                                 .ifPresent(xdom -> handleMentions(xdom, authorReference, documentReference));
                         }
                     }
                 }
             }
         }
-    }
-
-    private Optional<XDOM> parse(String payload)
-    {
-        Optional<XDOM> oxdom;
-        try {
-            XDOM xdom = this.parser.parse(new StringReader(payload));
-            oxdom = Optional.of(xdom);
-        } catch (ParseException e) {
-            this.logger
-                .warn("Failed to parse the payload [{}]. Cause [{}].", payload, getRootCauseMessage(e));
-            oxdom = Optional.empty();
-        }
-        return oxdom;
     }
 
     @Override
