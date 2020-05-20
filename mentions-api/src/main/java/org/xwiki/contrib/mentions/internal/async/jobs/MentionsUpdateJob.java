@@ -28,10 +28,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.xwiki.component.annotation.Component;
-import org.xwiki.contrib.mentions.MentionIdentityService;
+import org.xwiki.contrib.mentions.MentionNotificationService;
 import org.xwiki.contrib.mentions.MentionXDOMService;
-import org.xwiki.contrib.mentions.events.MentionEvent;
-import org.xwiki.contrib.mentions.events.MentionEventParams;
 import org.xwiki.contrib.mentions.internal.async.MentionsUpdatedRequest;
 import org.xwiki.contrib.mentions.internal.async.MentionsUpdatedStatus;
 import org.xwiki.job.AbstractJob;
@@ -62,7 +60,7 @@ public class MentionsUpdateJob extends AbstractJob<MentionsUpdatedRequest, Menti
     public static final String ASYNC_REQUEST_TYPE = "mentions-update-job";
 
     @Inject
-    private MentionIdentityService identityService;
+    private MentionNotificationService notificationService;
 
     @Inject
     private MentionXDOMService xdomService;
@@ -137,12 +135,6 @@ public class MentionsUpdateJob extends AbstractJob<MentionsUpdatedRequest, Menti
         List<MacroBlock> oldMentions = this.xdomService.listMentionMacros(oldXdom);
         List<MacroBlock> newMentions = this.xdomService.listMentionMacros(newXdom);
 
-
-        /*
-         * TODO: we have to decide if we want to return a simple count or if we want to return the details list of
-         * occurrences see comments on MentionCreateJob#handleMentions for more details on where to uniformize the
-         * notification behavior.
-         */
         Map<String, Long> oldCounts = this.xdomService.countByIdentifier(oldMentions);
         Map<String, Long> newCounts = this.xdomService.countByIdentifier(newMentions);
 
@@ -152,7 +144,7 @@ public class MentionsUpdateJob extends AbstractJob<MentionsUpdatedRequest, Menti
         newCounts.forEach((k, v) -> {
             Long oldCount = oldCounts.getOrDefault(k, 0L);
             if (v > oldCount) {
-                sendNotif(authorReference, documentReference, k);
+                this.notificationService.sendNotif(authorReference, documentReference, k);
             }
         });
     }
@@ -165,17 +157,7 @@ public class MentionsUpdateJob extends AbstractJob<MentionsUpdatedRequest, Menti
         // the matching element has not be found in the previous version of the document
         // notification are send unconditionally to all mentioned users.
         this.xdomService.countByIdentifier(newMentions)
-            .forEach((identity, v) -> sendNotif(authorReference, documentReference, identity));
-    }
-
-    private void sendNotif(DocumentReference authorReference, DocumentReference documentReference, String k)
-    {
-        MentionEventParams params = new MentionEventParams()
-                                        .setUserReference(authorReference.toString())
-                                        .setDocumentReference(documentReference.toString());
-        MentionEvent event = new MentionEvent(this.identityService.resolveIdentity(k), params);
-        MentionsUpdateJob.this.observationManager
-            .notify(event, "org.xwiki.contrib:mentions-notifications", MentionEvent.EVENT_TYPE);
+            .forEach((identity, v) -> this.notificationService.sendNotif(authorReference, documentReference, identity));
     }
 
     @Override

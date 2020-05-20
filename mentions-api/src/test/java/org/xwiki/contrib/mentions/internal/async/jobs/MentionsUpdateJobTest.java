@@ -18,23 +18,17 @@ package org.xwiki.contrib.mentions.internal.async.jobs;/*
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.xwiki.contrib.mentions.MentionIdentityService;
+import org.xwiki.contrib.mentions.MentionNotificationService;
 import org.xwiki.contrib.mentions.MentionXDOMService;
-import org.xwiki.contrib.mentions.events.MentionEvent;
-import org.xwiki.contrib.mentions.events.MentionEventParams;
 import org.xwiki.contrib.mentions.internal.async.MentionsUpdatedRequest;
 import org.xwiki.model.reference.DocumentReference;
-import org.xwiki.observation.ObservationManager;
 import org.xwiki.rendering.block.IdBlock;
 import org.xwiki.rendering.block.MacroBlock;
 import org.xwiki.rendering.block.XDOM;
@@ -62,8 +56,11 @@ import static org.mockito.Mockito.when;
  * @since 1.0
  */
 @ComponentTest
-class MentionsUpdateJobTest
+public class MentionsUpdateJobTest
 {
+    @InjectMockComponents
+    private MentionsUpdateJob job;
+
     @Mock
     private XWikiDocument newDocument;
 
@@ -74,16 +71,10 @@ class MentionsUpdateJobTest
     private XWikiContext context;
 
     @MockComponent
-    protected ObservationManager observationManager;
-
-    @MockComponent
     private MentionXDOMService xdomService;
 
     @MockComponent
-    private MentionIdentityService identityService;
-
-    @InjectMockComponents
-    private MentionsUpdateJob job;
+    private MentionNotificationService notificationService;
 
     @Test
     void runInternalNewMention()
@@ -111,26 +102,17 @@ class MentionsUpdateJobTest
         );
         when(this.xdomService.listMentionMacros(dom2Mentions)).thenReturn(l2mentions);
 
-        Map<String, Long> value = new HashMap<>();
-        value.put("u1", 1L);
-        when(this.xdomService.countByIdentifier(l1mention)).thenReturn(value);
-        Map<String, Long> value1 = new HashMap<>();
-        value1.put("u1", 2L);
-        when(this.xdomService.countByIdentifier(l2mentions)).thenReturn(value1);
-
-        Set<String> value2 = new HashSet<>();
-        value2.add("xwiki:XWiki.U1");
-        when(this.identityService.resolveIdentity("u1")).thenReturn(value2);
-
+        Map<String, Long> mentionsCountL1 = new HashMap<>();
+        mentionsCountL1.put("u1", 1L);
+        when(this.xdomService.countByIdentifier(l1mention)).thenReturn(mentionsCountL1);
+        Map<String, Long> mentionsCountL2 = new HashMap<>();
+        mentionsCountL2.put("u1", 2L);
+        when(this.xdomService.countByIdentifier(l2mentions)).thenReturn(mentionsCountL2);
+        
         this.job.initialize(new MentionsUpdatedRequest(this.newDocument, this.oldDocument, authorReference));
         this.job.runInternal();
 
-        MentionEventParams params = new MentionEventParams()
-                                        .setUserReference(authorReference.toString())
-                                        .setDocumentReference(documentReference.toString());
-        MentionEvent event = new MentionEvent(value2, params);
-        verify(this.observationManager)
-            .notify(event, "org.xwiki.contrib:mentions-notifications", MentionEvent.EVENT_TYPE);
+        verify(this.notificationService).sendNotif(authorReference, documentReference, "u1");
     }
 
     @Test
@@ -139,14 +121,14 @@ class MentionsUpdateJobTest
         DocumentReference authorReference = new DocumentReference("xwiki", "XWiki", "Creator");
         DocumentReference documentReference = new DocumentReference("xwiki", "XWiki", "Doc");
 
-        Map<DocumentReference, List<BaseObject>> value = new HashMap<>();
         BaseObject newComment = mock(BaseObject.class);
         when(newComment.getXClassReference()).thenReturn(new DocumentReference("xwiki", "XWiki", "XWikiComments"));
         LargeStringProperty newCommentLSP = new LargeStringProperty();
         newCommentLSP.setValue("COMMENT 1 CONTENT");
         when(newComment.getField("comment")).thenReturn(newCommentLSP);
-        value.put(new DocumentReference("xwiki", "XWiki", "NewComment"), singletonList(newComment));
-        when(this.newDocument.getXObjects()).thenReturn(value);
+        Map<DocumentReference, List<BaseObject>> xObjects = new HashMap<>();
+        xObjects.put(new DocumentReference("xwiki", "XWiki", "NewComment"), singletonList(newComment));
+        when(this.newDocument.getXObjects()).thenReturn(xObjects);
         when(this.newDocument.getDocumentReference()).thenReturn(documentReference);
 
         XDOM newCommentXDOM = new XDOM(emptyList());
@@ -156,24 +138,15 @@ class MentionsUpdateJobTest
         List<MacroBlock> newCommentNewMentions = singletonList(new MacroBlock("comment", parameters, false));
         when(this.xdomService.listMentionMacros(newCommentXDOM)).thenReturn(newCommentNewMentions);
 
-        Map<String, Long> value1 = new HashMap<>();
-        value1.put("XWiki.U1", 1L);
-        when(this.xdomService.countByIdentifier(newCommentNewMentions)).thenReturn(value1);
-        Set<String> value2 = new HashSet<>();
-        value2.add("xwiki:XWiki.U1");
-        when(this.identityService.resolveIdentity("XWiki.U1")).thenReturn(value2);
+        Map<String, Long> mentionsCount = new HashMap<>();
+        mentionsCount.put("XWiki.U1", 1L);
+        when(this.xdomService.countByIdentifier(newCommentNewMentions)).thenReturn(mentionsCount);
+       
 
         this.job.initialize(new MentionsUpdatedRequest(this.newDocument, this.oldDocument, authorReference));
         this.job.runInternal();
-
-        Set<String> targets = new HashSet<>();
-        targets.add("xwiki:XWiki.U1");
-        verify(this.observationManager)
-            .notify(new MentionEvent(targets, new MentionEventParams()
-                                                  .setUserReference(authorReference.toString())
-                                                  .setDocumentReference(documentReference.toString())),
-                "org.xwiki.contrib:mentions-notifications",
-                MentionEvent.EVENT_TYPE);
+        
+        verify(this.notificationService).sendNotif(authorReference, documentReference, "XWiki.U1");
     }
 
     @Test
@@ -183,24 +156,25 @@ class MentionsUpdateJobTest
         DocumentReference documentReference = new DocumentReference("xwiki", "XWiki", "Doc");
         DocumentReference commentDocRef = new DocumentReference("xwiki", "XWiki", "TheComment");
 
-        Map<DocumentReference, List<BaseObject>> value = new HashMap<>();
         BaseObject newComment = mock(BaseObject.class);
         when(newComment.getXClassReference()).thenReturn(new DocumentReference("xwiki", "XWiki", "XWikiComments"));
         LargeStringProperty newCommentLSP = new LargeStringProperty();
         newCommentLSP.setValue("COMMENT 1 CONTENT");
         newCommentLSP.setName("comment");
         when(newComment.getField("comment")).thenReturn(newCommentLSP);
-        value.put(commentDocRef, singletonList(newComment));
-        when(this.newDocument.getXObjects()).thenReturn(value);
+        Map<DocumentReference, List<BaseObject>> newDocXObjects = new HashMap<>();
+        newDocXObjects.put(commentDocRef, singletonList(newComment));
+        when(this.newDocument.getXObjects()).thenReturn(newDocXObjects);
         when(this.newDocument.getDocumentReference()).thenReturn(documentReference);
 
-        Map<DocumentReference, List<BaseObject>> value3 = new HashMap<>();
         BaseObject oldComment = mock(BaseObject.class);
         LargeStringProperty oldCommentLSP = new LargeStringProperty();
         oldCommentLSP.setValue("COMMENT 0 CONTENT");
         when(oldComment.getField("comment")).thenReturn(oldCommentLSP);
-        value3.put(commentDocRef, singletonList(oldComment));
-        when(this.oldDocument.getXObjects()).thenReturn(value3);
+        
+        Map<DocumentReference, List<BaseObject>> oldDocXObjects = new HashMap<>();
+        oldDocXObjects.put(commentDocRef, singletonList(oldComment));
+        when(this.oldDocument.getXObjects()).thenReturn(oldDocXObjects);
 
         XDOM newCommentXDOM = new XDOM(singletonList(new MacroBlock("mention", new HashMap<>(), false)));
         XDOM oldCommentXDOM = new XDOM(emptyList());
@@ -212,24 +186,14 @@ class MentionsUpdateJobTest
         List<MacroBlock> newCommentNewMentions = singletonList(new MacroBlock("comment", parameters, false));
         when(this.xdomService.listMentionMacros(newCommentXDOM)).thenReturn(newCommentNewMentions);
 
-        Map<String, Long> value1 = new HashMap<>();
-        value1.put("XWiki.U1", 1L);
-        when(this.xdomService.countByIdentifier(newCommentNewMentions)).thenReturn(value1);
-        Set<String> value2 = new HashSet<>();
-        value2.add("xwiki:XWiki.U1");
-        when(this.identityService.resolveIdentity("XWiki.U1")).thenReturn(value2);
+        Map<String, Long> mentionsCount = new HashMap<>();
+        mentionsCount.put("XWiki.U1", 1L);
+        when(this.xdomService.countByIdentifier(newCommentNewMentions)).thenReturn(mentionsCount);
 
         this.job.initialize(new MentionsUpdatedRequest(this.newDocument, this.oldDocument, authorReference));
         this.job.runInternal();
 
-        Set<String> targets = new HashSet<>();
-        targets.add("xwiki:XWiki.U1");
-        verify(this.observationManager)
-            .notify(new MentionEvent(targets, new MentionEventParams()
-                                                  .setUserReference(authorReference.toString())
-                                                  .setDocumentReference(documentReference.toString())),
-                "org.xwiki.contrib:mentions-notifications",
-                MentionEvent.EVENT_TYPE);
+        verify(this.notificationService).sendNotif(authorReference, documentReference, "XWiki.U1");
     }
 
     @Test
