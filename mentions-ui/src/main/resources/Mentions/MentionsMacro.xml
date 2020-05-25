@@ -41,6 +41,182 @@
   <object>
     <name>Mentions.MentionsMacro</name>
     <number>0</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>c01bb948-92a0-403d-bcbc-3bb6997529e8</guid>
+    <class>
+      <name>XWiki.JavaScriptExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <defaultValue>long</defaultValue>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <contenttype>PureText</contenttype>
+        <disabled>0</disabled>
+        <editor>PureText</editor>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <freeText>forbidden</freeText>
+        <largeStorage>0</largeStorage>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage|onDemand|always</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>require(['deferred!ckeditor', 'jquery'], function (ckeditorPromise, $) {
+  const getGlobalUsers = function (params) {
+    return getUsers($.extend(params, {
+      'wiki': 'global'
+    }));
+  };
+
+  const getUsers = function (params) {
+    return $.getJSON(XWiki.currentDocument.getURL('get'), $.extend(params, {
+      'xpage': 'uorgsuggest',
+      'media': 'json',
+      'uorg': 'user'
+    }));
+  };
+
+  const search = function (text, callback) {
+    const params = {
+      'input': text,
+      'limit': 6,
+    };
+    $.when(getGlobalUsers(params)).then(function (globalUsers) {
+      const cct = globalUsers.map(function (x) {
+        // insert an id because that's required by the mentions plugins.
+        x.id = x.value;
+        return x;
+      });
+      callback(cct);
+    })
+  }
+
+  ckeditorPromise.done(function (ckeditor) {
+    function confMentions(name) {
+      return {
+        feed: function (opts, callback) {
+          search(opts.query, callback);
+        },
+        marker: '@',
+        minChars: 0,
+        itemsLimit: 6,
+        itemTemplate: '&lt;li data-id="{value}"&gt;{label}&lt;/li&gt;',
+        outputTemplate: function (param) {
+          var editor = ckeditor.instances[name];
+          editor.once('afterInsertHtml', function () {
+            editor.execCommand('xwiki-macro-insert', {
+              name: 'mention',
+              inline: true,
+              parameters: {
+                identifier: param.id,
+                displayChoice: 'FIRST_AND_LAST_NAME',
+              }
+            });
+          });
+          // the outputTemplate insert nothing but wait for the afterInsertHtml event to be triggered
+          // at this point the xwiki-macro-insert deals with the macro insertion in the rich editor.
+          return '';
+        }
+      };
+    }
+
+    function updateConf(config, name) {
+      const newConf = config;
+      newConf.mentions = newConf.mentions || [];
+      newConf.mentions.push(confMentions(name));
+      return newConf;
+    }
+
+    var oldReplace = ckeditor.replace;
+    ckeditor.replace = function (element, config) {
+      return oldReplace.call(this, element, updateConf(config, element.id));
+    };
+
+    var oldInline = ckeditor.inline;
+    ckeditor.inline = function (element, config) {
+      return oldInline.call(this, element, updateConf(config, element.id));
+    };
+  });
+});
+</code>
+    </property>
+    <property>
+      <name/>
+    </property>
+    <property>
+      <parse>0</parse>
+    </property>
+    <property>
+      <use>always</use>
+    </property>
+  </object>
+  <object>
+    <name>Mentions.MentionsMacro</name>
+    <number>0</number>
     <className>XWiki.StyleSheetExtension</className>
     <guid>2e1aa3cf-0475-4362-bad1-0b608bcef372</guid>
     <class>
