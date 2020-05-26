@@ -82,6 +82,5 @@
         <artifactId>revapi-maven-plugin</artifactId>
       </plugin>
     </plugins>
-    
   </build>
 </project>

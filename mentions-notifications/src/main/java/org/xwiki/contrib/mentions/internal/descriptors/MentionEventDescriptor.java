@@ -23,8 +23,9 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.xwiki.component.annotation.Component;
-import org.xwiki.contrib.mentions.events.MentionEvent;
 import org.xwiki.eventstream.RecordableEventDescriptor;
+
+import static org.xwiki.contrib.mentions.events.MentionEvent.EVENT_TYPE;
 
 /**
  * Description of the user mentions notification. 
@@ -35,13 +36,13 @@ import org.xwiki.eventstream.RecordableEventDescriptor;
  */
 @Component
 @Singleton
-@Named(MentionEvent.EVENT_TYPE)
+@Named(EVENT_TYPE)
 public class MentionEventDescriptor implements RecordableEventDescriptor
 {
     @Override
     public String getEventType()
     {
-        return MentionEvent.EVENT_TYPE;
+        return EVENT_TYPE;
     }
 
     @Override

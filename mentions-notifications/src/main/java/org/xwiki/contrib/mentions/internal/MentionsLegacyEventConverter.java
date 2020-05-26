@@ -19,6 +19,7 @@
  */
 package org.xwiki.contrib.mentions.internal;
 
+import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
@@ -39,10 +40,9 @@ import static org.xwiki.contrib.mentions.internal.MentionsRecordableEventConvert
  * @version $Id$
  * @since 1.0
  */
-@Component(hints = {
-    MentionEvent.EVENT_TYPE
-})
+@Component
 @Singleton
+@Named(MentionEvent.EVENT_TYPE)
 public class MentionsLegacyEventConverter extends AbstractLegacyEventConverter
 {
     @Override

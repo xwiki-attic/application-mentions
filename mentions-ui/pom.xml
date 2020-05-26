@@ -35,6 +35,7 @@
   <properties>
     <!-- Name to display by the Extension Manager -->
     <xwiki.extension.name>User Mentions Application</xwiki.extension.name>
+    <xwiki.extension.category>application</xwiki.extension.category>
   </properties>
   <dependencies>
     <dependency>
