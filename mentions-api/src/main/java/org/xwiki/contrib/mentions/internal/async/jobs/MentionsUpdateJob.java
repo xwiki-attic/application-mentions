@@ -30,18 +30,25 @@ import javax.inject.Named;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.contrib.mentions.MentionNotificationService;
 import org.xwiki.contrib.mentions.MentionXDOMService;
+import org.xwiki.contrib.mentions.internal.MentionLocation;
 import org.xwiki.contrib.mentions.internal.async.MentionsUpdatedRequest;
 import org.xwiki.contrib.mentions.internal.async.MentionsUpdatedStatus;
 import org.xwiki.job.AbstractJob;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.rendering.block.MacroBlock;
 import org.xwiki.rendering.block.XDOM;
+import org.xwiki.text.StringUtils;
 
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.LargeStringProperty;
 
 import static java.util.Optional.ofNullable;
+import static org.xwiki.annotation.Annotation.SELECTION_FIELD;
+import static org.xwiki.contrib.mentions.internal.MentionLocation.ANNOTATION;
+import static org.xwiki.contrib.mentions.internal.MentionLocation.AWM_FIELD;
+import static org.xwiki.contrib.mentions.internal.MentionLocation.COMMENT;
+import static org.xwiki.contrib.mentions.internal.MentionLocation.DOCUMENT;
 import static org.xwiki.contrib.mentions.internal.async.jobs.MentionsUpdateJob.ASYNC_REQUEST_TYPE;
 
 /**
@@ -76,7 +83,7 @@ public class MentionsUpdateJob extends AbstractJob<MentionsUpdatedRequest, Menti
         DocumentReference authorReference = request.getAuthorReference();
         DocumentReference documentReference = newDoc.getDocumentReference();
 
-        handle(oldXdom, newXdom, authorReference, documentReference);
+        handle(oldXdom, newXdom, authorReference, documentReference, DOCUMENT);
 
         Map<DocumentReference, List<BaseObject>> xObjects = newDoc.getXObjects();
         Map<DocumentReference, List<BaseObject>> oldXObjects = oldDoc.getXObjects();
@@ -100,12 +107,18 @@ public class MentionsUpdateJob extends AbstractJob<MentionsUpdatedRequest, Menti
                 XWikiDocument.COMMENTSCLASS_REFERENCE))
             {
                 Optional.<Object>ofNullable(baseObject.getField("comment"))
-                    .ifPresent(it -> handleField(authorReference, documentReference, oldBaseObject,
-                        (LargeStringProperty) it));
+                    .ifPresent(it -> {
+                        LargeStringProperty lsp = (LargeStringProperty) it;
+                        boolean isComment =
+                            StringUtils.isEmpty(lsp.getObject().getField(SELECTION_FIELD).toFormString());
+                        handleField(authorReference, documentReference, oldBaseObject, lsp,
+                            isComment ? COMMENT : ANNOTATION);
+                    });
             } else {
                 for (Object o : baseObject.getProperties()) {
                     if (o instanceof LargeStringProperty) {
-                        handleField(authorReference, documentReference, oldBaseObject, (LargeStringProperty) o);
+                        handleField(authorReference, documentReference, oldBaseObject, (LargeStringProperty) o,
+                            AWM_FIELD);
                     }
                 }
             }
@@ -113,23 +126,23 @@ public class MentionsUpdateJob extends AbstractJob<MentionsUpdatedRequest, Menti
     }
 
     private void handleField(DocumentReference authorReference, DocumentReference documentReference,
-        Optional<BaseObject> oldBaseObject, LargeStringProperty lsp)
+        Optional<BaseObject> oldBaseObject, LargeStringProperty lsp,
+        MentionLocation location)
     {
         Optional<XDOM> oldDom = oldBaseObject.flatMap(it -> ofNullable(it.getField(lsp.getName())))
                                     .filter(it -> it instanceof LargeStringProperty)
                                     .flatMap(it -> this.xdomService.parse(((LargeStringProperty) it).getValue()));
-        this.xdomService.parse(lsp.getValue()).ifPresent(
-            xdom -> {
-                // can be replaced by ifPresentOrElse for in java 9+ 
-                oldDom.ifPresent(od -> handle(od, xdom, authorReference, documentReference));
-                if (!oldDom.isPresent()) {
-                    handleMissing(xdom, authorReference, documentReference);
-                }
-            });
+        this.xdomService.parse(lsp.getValue()).ifPresent(xdom -> {
+            // can be replaced by ifPresentOrElse for in java 9+ 
+            oldDom.ifPresent(od -> handle(od, xdom, authorReference, documentReference, location));
+            if (!oldDom.isPresent()) {
+                handleMissing(xdom, authorReference, documentReference, location);
+            }
+        });
     }
 
     private void handle(XDOM oldXdom, XDOM newXdom, DocumentReference authorReference,
-        DocumentReference documentReference)
+        DocumentReference documentReference, MentionLocation location)
     {
 
         List<MacroBlock> oldMentions = this.xdomService.listMentionMacros(oldXdom);
@@ -144,20 +157,21 @@ public class MentionsUpdateJob extends AbstractJob<MentionsUpdatedRequest, Menti
         newCounts.forEach((k, v) -> {
             Long oldCount = oldCounts.getOrDefault(k, 0L);
             if (v > oldCount) {
-                this.notificationService.sendNotif(authorReference, documentReference, k);
+                this.notificationService.sendNotif(authorReference, documentReference, k, location);
             }
         });
     }
 
     private void handleMissing(XDOM newXdom, DocumentReference authorReference,
-        DocumentReference documentReference)
+        DocumentReference documentReference, MentionLocation location)
     {
         List<MacroBlock> newMentions = this.xdomService.listMentionMacros(newXdom);
 
         // the matching element has not be found in the previous version of the document
         // notification are send unconditionally to all mentioned users.
         this.xdomService.countByIdentifier(newMentions)
-            .forEach((identity, v) -> this.notificationService.sendNotif(authorReference, documentReference, identity));
+            .forEach((identity, v) -> this.notificationService
+                                          .sendNotif(authorReference, documentReference, identity, location));
     }
 
     @Override

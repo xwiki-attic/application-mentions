@@ -20,8 +20,10 @@ package org.xwiki.contrib.mentions.internal;/*
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
+import org.xwiki.contrib.mentions.MentionsNotificationsObjectMapper;
 import org.xwiki.contrib.mentions.events.MentionEvent;
 import org.xwiki.contrib.mentions.events.MentionEventParams;
 import org.xwiki.eventstream.Event;
@@ -34,6 +36,7 @@ import org.xwiki.test.junit5.mockito.MockComponent;
 
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -58,6 +61,8 @@ public class MentionsRecordableEventConverterTest
     @MockComponent
     private RecordableEventConverter defaultConverter;
 
+    @MockComponent
+    private MentionsNotificationsObjectMapper objectMapper;
 
     @Test
     void convert() throws Exception
@@ -76,14 +81,18 @@ public class MentionsRecordableEventConverterTest
         Event event = mock(Event.class);
         when(this.defaultConverter.convert(recordableEvent, "aa", null)).thenReturn(event);
 
-        this.converter.convert(recordableEvent, "aa", null);
+        when(this.objectMapper.serialize(params)).thenReturn(
+            Optional.of("{\"userReference\":\"xwiki:XWiki.U1\",\"documentReference\":\"xwiki:XWiki.Doc\"}"));
+
+        Event actual = this.converter.convert(recordableEvent, "aa", null);
+        assertNotNull(actual);
         verify(event).setUser(userDocument);
         verify(event).setDocument(document);
         verify(event).setType(EVENT_TYPE);
         HashMap<String, String> parameters = new HashMap<>();
-        parameters.put(MENTIONS_PARAMETER_KEY, "{\"userReference\":\"xwiki:XWiki.U1\",\"documentReference\":\"xwiki:XWiki.Doc\"}");
+        parameters.put(MENTIONS_PARAMETER_KEY,
+            "{\"userReference\":\"xwiki:XWiki.U1\",\"documentReference\":\"xwiki:XWiki.Doc\"}");
         verify(event).setParameters(parameters);
-        
     }
 
     @Test

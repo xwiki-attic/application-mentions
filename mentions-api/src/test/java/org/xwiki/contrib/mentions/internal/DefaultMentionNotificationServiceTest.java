@@ -33,6 +33,7 @@ import org.xwiki.test.junit5.mockito.MockComponent;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.xwiki.contrib.mentions.events.MentionEvent.EVENT_TYPE;
+import static org.xwiki.contrib.mentions.internal.MentionLocation.COMMENT;
 
 /**
  * Test of {@link DefaultMentionNotificationService}.
@@ -63,12 +64,13 @@ public class DefaultMentionNotificationServiceTest
         identity.add("xwiki:XWiki.U2");
         when(this.identityService.resolveIdentity("U2")).thenReturn(identity);
 
-        this.notificationService.sendNotif(authorReference, documentReference, mentionedIdentitiy);
+        this.notificationService.sendNotif(authorReference, documentReference, mentionedIdentitiy, COMMENT);
 
         MentionEvent event = new MentionEvent(identity,
             new MentionEventParams()
                 .setUserReference(authorReference.toString())
                 .setDocumentReference(documentReference.toString())
+                .setLocation(COMMENT)
         );
         verify(this.observationManager).notify(event, "org.xwiki.contrib:mentions-notifications", EVENT_TYPE);
     }

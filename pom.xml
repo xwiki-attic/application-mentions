@@ -71,6 +71,7 @@
     </dependency>
   </dependencies>
   <modules>
+    <module>mentions-commons</module>
     <module>mentions-api</module>
     <module>mentions-notifications</module>
     <module>mentions-ui</module>

@@ -19,8 +19,6 @@
  */
 package org.xwiki.contrib.mentions.internal;
 
-import java.io.IOException;
-import java.io.StringReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +33,7 @@ import javax.script.ScriptContext;
 import org.slf4j.Logger;
 import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.component.annotation.Component;
+import org.xwiki.contrib.mentions.MentionsNotificationsObjectMapper;
 import org.xwiki.contrib.mentions.events.MentionEvent;
 import org.xwiki.contrib.mentions.events.MentionEventParams;
 import org.xwiki.eventstream.Event;
@@ -48,7 +47,6 @@ import org.xwiki.rendering.block.GroupBlock;
 import org.xwiki.script.ScriptContextManager;
 import org.xwiki.template.TemplateManager;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 
@@ -87,6 +85,9 @@ public class MentionsNotificationDisplayer implements NotificationDisplayer
     private DocumentReferenceResolver<String> documentReferenceResolver;
 
     @Inject
+    private MentionsNotificationsObjectMapper objectMapper;
+
+    @Inject
     private Logger logger;
 
     @Override
@@ -123,7 +124,7 @@ public class MentionsNotificationDisplayer implements NotificationDisplayer
             this.documentReferenceResolver.resolve(mentionEventParams.getUserReference());
         DocumentReference documentReference =
             this.documentReferenceResolver.resolve(mentionEventParams.getDocumentReference());
-
+        
         try {
             XWikiContext context = this.contextProvider.get();
             String urlAction = "view";
@@ -131,7 +132,12 @@ public class MentionsNotificationDisplayer implements NotificationDisplayer
             XWikiDocument document = (XWikiDocument) this.documentAccess.getDocumentInstance(documentReference);
             String authorURL = userDocumentInstance.getExternalURL(urlAction, context);
             String documentURL = document.getExternalURL(urlAction, context);
-            return Optional.of(new MentionView(authorURL, documentURL, document));
+            MentionView mentionView = new MentionView()
+                                          .setAuthorURL(authorURL)
+                                          .setDocumentURL(documentURL)
+                                          .setDocument(document)
+                                          .setLocation(mentionEventParams.getLocation().name());
+            return Optional.of(mentionView);
         } catch (Exception e) {
             this.logger
                 .warn("Error during the conversion of [{}]. Cause [{}].", userReference, getRootCauseMessage(e));
@@ -149,16 +155,7 @@ public class MentionsNotificationDisplayer implements NotificationDisplayer
     {
         Map<String, String> parameters = event.getParameters();
         if (parameters.containsKey(MENTIONS_PARAMETER_KEY)) {
-            try {
-                MentionEventParams mentionEventParams = new ObjectMapper().readValue(
-                    new StringReader(parameters.get(MENTIONS_PARAMETER_KEY)), MentionEventParams.class);
-
-                return Optional.of(mentionEventParams);
-            } catch (IOException e) {
-                this.logger.warn("Failed to parse the parameters of the Event [{}]. Cause [{}].", event,
-                    getRootCauseMessage(e));
-                return Optional.empty();
-            }
+            return this.objectMapper.unserialize(parameters.get(MENTIONS_PARAMETER_KEY));
         } else {
             return Optional.empty();
         }

@@ -19,17 +19,18 @@
  */
 package org.xwiki.contrib.mentions.internal;
 
-import java.io.IOException;
-import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
+import org.xwiki.contrib.mentions.MentionsNotificationsObjectMapper;
 import org.xwiki.contrib.mentions.events.MentionEvent;
 import org.xwiki.contrib.mentions.events.MentionEventParams;
 import org.xwiki.eventstream.Event;
@@ -38,9 +39,8 @@ import org.xwiki.eventstream.RecordableEventConverter;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import static java.util.Collections.singletonList;
+import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCauseMessage;
 import static org.xwiki.contrib.mentions.events.MentionEvent.EVENT_TYPE;
 
 /**
@@ -65,8 +65,14 @@ public class MentionsRecordableEventConverter implements RecordableEventConverte
     @Inject
     private DocumentReferenceResolver<String> documentReferenceResolver;
 
+    @Inject
+    private MentionsNotificationsObjectMapper objectMapper;
+
+    @Inject
+    private Logger logger;
+
     @Override
-    public Event convert(RecordableEvent recordableEvent, String source, Object data) throws Exception
+    public Event convert(RecordableEvent recordableEvent, String source, Object data)
     {
         // This code is called once when creating the notification in db 
         MentionEvent mentionEvent = (MentionEvent) recordableEvent;
@@ -78,15 +84,23 @@ public class MentionsRecordableEventConverter implements RecordableEventConverte
         // additional information needed later for rendering mentions notification are stored
         // in a MentionEvent object and serialized to json.
         // This object is unserialized when needed for the rendering.
-        String json = serializeParameters(mentionEvent);
+        Optional<String> serialize = this.objectMapper.serialize(mentionEvent.getParams());
+        return serialize.map(json -> {
+            try {
+                Event convertedEvent = this.defaultConverter.convert(recordableEvent, source, data);
 
-        Event convertedEvent = this.defaultConverter.convert(recordableEvent, source, data);
-        convertedEvent.setUser(userDocument);
-        convertedEvent.setDocument(document);
-        convertedEvent.setType(EVENT_TYPE);
-        Map<String, String> parameters = initializeParameters(json);
-        convertedEvent.setParameters(parameters);
-        return convertedEvent;
+                convertedEvent.setUser(userDocument);
+                convertedEvent.setDocument(document);
+                convertedEvent.setType(EVENT_TYPE);
+                Map<String, String> parameters = initializeParameters(json);
+                convertedEvent.setParameters(parameters);
+                return convertedEvent;
+            } catch (Exception e) {
+                this.logger.warn("Failed to convert the recordable event [{}]. Cause [{}].", recordableEvent,
+                    getRootCauseMessage(e));
+                return null;
+            }
+        }).orElse(null);
     }
 
     private Map<String, String> initializeParameters(String value)
@@ -96,12 +110,6 @@ public class MentionsRecordableEventConverter implements RecordableEventConverte
         return parameters;
     }
 
-    private String serializeParameters(MentionEvent recordableEvent) throws IOException
-    {
-        StringWriter w = new StringWriter();
-        new ObjectMapper().writeValue(w, recordableEvent.getParams());
-        return w.toString();
-    }
 
     @Override
     public List<RecordableEvent> getSupportedEvents()

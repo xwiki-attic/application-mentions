@@ -20,6 +20,7 @@
 package org.xwiki.contrib.mentions;
 
 import org.xwiki.component.annotation.Role;
+import org.xwiki.contrib.mentions.internal.MentionLocation;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.stability.Unstable;
 
@@ -35,10 +36,11 @@ public interface MentionNotificationService
 {
     /**
      * Send a notification on behalf of the author, informing the mentioned user that he/she is mentioned on the a page.
-     *
-     * @param authorReference the reference of the author of the mention.
+     *  @param authorReference the reference of the author of the mention.
      * @param documentReference the document in which the mention has been done.
      * @param mentionedIdentity the identity of the mentioned user.
+     * @param location
      */
-    void sendNotif(DocumentReference authorReference, DocumentReference documentReference, String mentionedIdentity);
+    void sendNotif(DocumentReference authorReference, DocumentReference documentReference, String mentionedIdentity,
+        MentionLocation location);
 }

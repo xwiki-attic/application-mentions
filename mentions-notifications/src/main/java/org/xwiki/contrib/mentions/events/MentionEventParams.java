@@ -21,7 +21,10 @@ package org.xwiki.contrib.mentions.events;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.xwiki.contrib.mentions.internal.MentionLocation;
 import org.xwiki.text.XWikiToStringBuilder;
+
+import static org.xwiki.contrib.mentions.internal.MentionLocation.UNDEFINED;
 
 /**
  * The parameters of the mention event.
@@ -35,6 +38,8 @@ public class MentionEventParams
     private String userReference;
 
     private String documentReference;
+
+    private MentionLocation location = UNDEFINED;
 
     /**
      *
@@ -76,6 +81,26 @@ public class MentionEventParams
         return this;
     }
 
+    /**
+     *
+     * @return the location of the mention.
+     */
+    public MentionLocation getLocation()
+    {
+        return this.location;
+    }
+
+    /**
+     *
+     * @param location the location of the mention.
+     * @return the current object.
+     */
+    public MentionEventParams setLocation(MentionLocation location)
+    {
+        this.location = location;
+        return this;
+    }
+
     @Override
     public boolean equals(Object o)
     {
@@ -92,6 +117,7 @@ public class MentionEventParams
         return new EqualsBuilder()
                    .append(this.userReference, that.userReference)
                    .append(this.documentReference, that.documentReference)
+                   .append(this.location, that.location)
                    .isEquals();
     }
 
@@ -101,6 +127,7 @@ public class MentionEventParams
         return new HashCodeBuilder(17, 37)
                    .append(this.userReference)
                    .append(this.documentReference)
+                   .append(this.location)
                    .toHashCode();
     }
 
@@ -110,6 +137,7 @@ public class MentionEventParams
         return new XWikiToStringBuilder(this)
                    .append("userReference", this.getUserReference())
                    .append("documentReference", this.getDocumentReference())
+                   .append("location", this.getLocation())
                    .build();
     }
 }

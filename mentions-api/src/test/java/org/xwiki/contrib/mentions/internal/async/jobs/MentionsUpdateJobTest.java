@@ -23,12 +23,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.dom4j.Element;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.xwiki.annotation.Annotation;
 import org.xwiki.contrib.mentions.MentionNotificationService;
 import org.xwiki.contrib.mentions.MentionXDOMService;
 import org.xwiki.contrib.mentions.internal.async.MentionsUpdatedRequest;
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.model.reference.EntityReference;
 import org.xwiki.rendering.block.IdBlock;
 import org.xwiki.rendering.block.MacroBlock;
 import org.xwiki.rendering.block.XDOM;
@@ -38,8 +41,14 @@ import org.xwiki.test.junit5.mockito.MockComponent;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
+import com.xpn.xwiki.doc.merge.MergeConfiguration;
+import com.xpn.xwiki.doc.merge.MergeResult;
+import com.xpn.xwiki.objects.BaseCollection;
 import com.xpn.xwiki.objects.BaseObject;
+import com.xpn.xwiki.objects.BaseStringProperty;
+import com.xpn.xwiki.objects.ElementInterface;
 import com.xpn.xwiki.objects.LargeStringProperty;
+import com.xpn.xwiki.objects.PropertyInterface;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -48,6 +57,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.xwiki.annotation.Annotation.SELECTION_FIELD;
+import static org.xwiki.contrib.mentions.internal.MentionLocation.ANNOTATION;
+import static org.xwiki.contrib.mentions.internal.MentionLocation.COMMENT;
+import static org.xwiki.contrib.mentions.internal.MentionLocation.DOCUMENT;
 
 /**
  * Test of {@link MentionsUpdateJob}.
@@ -112,7 +125,7 @@ public class MentionsUpdateJobTest
         this.job.initialize(new MentionsUpdatedRequest(this.newDocument, this.oldDocument, authorReference));
         this.job.runInternal();
 
-        verify(this.notificationService).sendNotif(authorReference, documentReference, "u1");
+        verify(this.notificationService).sendNotif(authorReference, documentReference, "u1", DOCUMENT);
     }
 
     @Test
@@ -125,6 +138,13 @@ public class MentionsUpdateJobTest
         when(newComment.getXClassReference()).thenReturn(new DocumentReference("xwiki", "XWiki", "XWikiComments"));
         LargeStringProperty newCommentLSP = new LargeStringProperty();
         newCommentLSP.setValue("COMMENT 1 CONTENT");
+        Map fields = new HashMap();
+        BaseStringProperty value = new BaseStringProperty();
+        value.setValue("annotation");
+        fields.put(SELECTION_FIELD, value);
+        BaseObject object = new BaseObject();
+        object.setFields(fields);
+        newCommentLSP.setObject(object);
         when(newComment.getField("comment")).thenReturn(newCommentLSP);
         Map<DocumentReference, List<BaseObject>> xObjects = new HashMap<>();
         xObjects.put(new DocumentReference("xwiki", "XWiki", "NewComment"), singletonList(newComment));
@@ -145,8 +165,8 @@ public class MentionsUpdateJobTest
 
         this.job.initialize(new MentionsUpdatedRequest(this.newDocument, this.oldDocument, authorReference));
         this.job.runInternal();
-        
-        verify(this.notificationService).sendNotif(authorReference, documentReference, "XWiki.U1");
+
+        verify(this.notificationService).sendNotif(authorReference, documentReference, "XWiki.U1", ANNOTATION);
     }
 
     @Test
@@ -161,6 +181,11 @@ public class MentionsUpdateJobTest
         LargeStringProperty newCommentLSP = new LargeStringProperty();
         newCommentLSP.setValue("COMMENT 1 CONTENT");
         newCommentLSP.setName("comment");
+        BaseObject object = new BaseObject();
+        Map fields = new HashMap();
+        fields.put(SELECTION_FIELD, new BaseStringProperty());
+        object.setFields(fields);
+        newCommentLSP.setObject(object);
         when(newComment.getField("comment")).thenReturn(newCommentLSP);
         Map<DocumentReference, List<BaseObject>> newDocXObjects = new HashMap<>();
         newDocXObjects.put(commentDocRef, singletonList(newComment));
@@ -193,7 +218,7 @@ public class MentionsUpdateJobTest
         this.job.initialize(new MentionsUpdatedRequest(this.newDocument, this.oldDocument, authorReference));
         this.job.runInternal();
 
-        verify(this.notificationService).sendNotif(authorReference, documentReference, "XWiki.U1");
+        verify(this.notificationService).sendNotif(authorReference, documentReference, "XWiki.U1", COMMENT);
     }
 
     @Test

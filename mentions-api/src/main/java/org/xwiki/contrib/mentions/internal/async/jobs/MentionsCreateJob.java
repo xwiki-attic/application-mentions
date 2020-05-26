@@ -29,6 +29,7 @@ import javax.inject.Named;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.contrib.mentions.MentionNotificationService;
 import org.xwiki.contrib.mentions.MentionXDOMService;
+import org.xwiki.contrib.mentions.internal.MentionLocation;
 import org.xwiki.contrib.mentions.internal.async.MentionsCreatedRequest;
 import org.xwiki.contrib.mentions.internal.async.MentionsCreatedStatus;
 import org.xwiki.job.AbstractJob;
@@ -40,6 +41,8 @@ import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.LargeStringProperty;
 
+import static org.xwiki.contrib.mentions.internal.MentionLocation.AWM_FIELD;
+import static org.xwiki.contrib.mentions.internal.MentionLocation.DOCUMENT;
 import static org.xwiki.contrib.mentions.internal.async.jobs.MentionsCreateJob.ASYNC_REQUEST_TYPE;
 
 /**
@@ -71,20 +74,21 @@ public class MentionsCreateJob extends AbstractJob<MentionsCreatedRequest, Menti
         DocumentReference authorReference = doc.getAuthorReference();
         DocumentReference documentReference = doc.getDocumentReference();
 
-        handleMentions(doc.getXDOM(), authorReference, documentReference);
+        handleMentions(doc.getXDOM(), authorReference, documentReference, DOCUMENT);
 
         traverseXObjects(doc.getXObjects(), authorReference, documentReference);
     }
 
     private void handleMentions(XDOM xdom, DocumentReference authorReference,
-        DocumentReference documentReference)
+        DocumentReference documentReference, MentionLocation location)
     {
         List<MacroBlock> blocks = this.xdomService.listMentionMacros(xdom);
 
         Map<String, Long> counts = this.xdomService.countByIdentifier(blocks);
 
         counts.keySet()
-            .forEach(identifier -> this.notificationService.sendNotif(authorReference, documentReference, identifier));
+            .forEach(identifier -> this.notificationService.sendNotif(authorReference, documentReference, identifier,
+                location));
     }
 
     private void traverseXObjects(Map<DocumentReference, List<BaseObject>> xObjects, DocumentReference authorReference,
@@ -96,7 +100,7 @@ public class MentionsCreateJob extends AbstractJob<MentionsCreatedRequest, Menti
                     for (Object o : baseObject.getProperties()) {
                         if (o instanceof LargeStringProperty) {
                             this.xdomService.parse(((LargeStringProperty) o).getValue())
-                                .ifPresent(xdom -> handleMentions(xdom, authorReference, documentReference));
+                                .ifPresent(xdom -> handleMentions(xdom, authorReference, documentReference, AWM_FIELD));
                         }
                     }
                 }

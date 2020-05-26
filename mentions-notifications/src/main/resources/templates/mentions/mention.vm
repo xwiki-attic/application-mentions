@@ -61,9 +61,21 @@
     #define($rows)
         #foreach($event in $compositeEvent.events)
             #set ($eventParams = $compositeEventParams.get($event))
+            #set ($location = $eventParams.location)
             ## TODO: define variation for group mention
             ## TODO: add an achor to the specific place on the document.
-            #set ($description = "$services.localization.render('mentions.event.mention.description') <a href='$eventParams.getDocumentURL()'>$eventParams.getDocument().getTitle()</a>")
+            #if ($location == "DOCUMENT")
+                #set ($descriptionKey = 'mentions.event.mention.description.document')
+            #elseif($location == "COMMENT")
+                #set ($descriptionKey = 'mentions.event.mention.description.comment')
+            #elseif($location == "ANNOTATION")
+                #set ($descriptionKey = 'mentions.event.mention.description.annotation')
+            #elseif($location == "AWM_FIELD")
+                #set ($descriptionKey = 'mentions.event.mention.description.awmField')
+            #else
+                #set ($descriptionKey = 'mentions.event.mention.description')
+            #end
+            #set ($description = "$services.localization.render($descriptionKey) <a href='$eventParams.getDocumentURL()'>$eventParams.getDocument().getTitle()</a>")
             #displayEventDetail($event $description)
         #end
     #end

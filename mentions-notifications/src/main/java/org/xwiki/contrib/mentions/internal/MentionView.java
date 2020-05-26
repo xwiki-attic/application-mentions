@@ -33,50 +33,56 @@ import com.xpn.xwiki.doc.XWikiDocument;
  */
 public class MentionView
 {
-    private final String authorURL;
+    private String authorURL;
 
-    private final String documentURL;
+    private String documentURL;
 
-    private final XWikiDocument document;
+    private XWikiDocument document;
 
-    /**
-     * Default constructor.
-     * @param authorURL URL of the profile page of the mention author.
-     * @param documentURL URL of the document in which the mention occurred.
-     * @param document Document in which the mention occurred.
-     */
-    public MentionView(String authorURL, String documentURL, XWikiDocument document)
-    {
-        this.authorURL = authorURL;
-        this.documentURL = documentURL;
-        this.document = document;
-    }
+    private String location;
 
-    /**
-     *
-     * @return URL of the profile page of the mention author.
-     */
     public String getAuthorURL()
     {
         return this.authorURL;
     }
 
-    /**
-     *
-     * @return URL of the document in which the mention occurred.
-     */
+    public MentionView setAuthorURL(String authorURL)
+    {
+        this.authorURL = authorURL;
+        return this;
+    }
+
     public String getDocumentURL()
     {
         return this.documentURL;
     }
 
-    /**
-     *
-     * @return Document in which the mention occurred.
-     */
+    public MentionView setDocumentURL(String documentURL)
+    {
+        this.documentURL = documentURL;
+        return this;
+    }
+
     public XWikiDocument getDocument()
     {
         return this.document;
+    }
+
+    public MentionView setDocument(XWikiDocument document)
+    {
+        this.document = document;
+        return this;
+    }
+
+    public String getLocation()
+    {
+        return this.location;
+    }
+
+    public MentionView setLocation(String location)
+    {
+        this.location = location;
+        return this;
     }
 
     @Override
@@ -96,16 +102,17 @@ public class MentionView
                    .append(this.authorURL, that.authorURL)
                    .append(this.documentURL, that.documentURL)
                    .append(this.document, that.document)
+                   .append(this.location, that.location)
                    .isEquals();
     }
 
-    @Override
-    public int hashCode()
+    @Override public int hashCode()
     {
         return new HashCodeBuilder(17, 37)
                    .append(this.authorURL)
                    .append(this.documentURL)
                    .append(this.document)
+                   .append(this.location)
                    .toHashCode();
     }
 
@@ -115,6 +122,7 @@ public class MentionView
         return new XWikiToStringBuilder(this)
                    .append("authorURL", this.getAuthorURL())
                    .append("documentURL", this.getDocumentURL())
+                   .append("location", this.getLocation())
                    .build();
     }
 }

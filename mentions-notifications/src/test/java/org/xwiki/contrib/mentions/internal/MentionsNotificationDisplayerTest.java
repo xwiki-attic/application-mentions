@@ -21,6 +21,7 @@ package org.xwiki.contrib.mentions.internal;/*
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.inject.Provider;
 import javax.script.ScriptContext;
@@ -28,7 +29,9 @@ import javax.script.ScriptContext;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.xwiki.bridge.DocumentAccessBridge;
+import org.xwiki.contrib.mentions.MentionsNotificationsObjectMapper;
 import org.xwiki.contrib.mentions.events.MentionEvent;
+import org.xwiki.contrib.mentions.events.MentionEventParams;
 import org.xwiki.eventstream.Event;
 import org.xwiki.eventstream.internal.DefaultEvent;
 import org.xwiki.model.reference.DocumentReference;
@@ -49,6 +52,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.xwiki.contrib.mentions.internal.MentionLocation.DOCUMENT;
 import static org.xwiki.contrib.mentions.internal.MentionsRecordableEventConverter.MENTIONS_PARAMETER_KEY;
 
 /**
@@ -85,6 +89,9 @@ public class MentionsNotificationDisplayerTest
     @MockComponent
     private TemplateManager templateManager;
 
+    @MockComponent
+    private MentionsNotificationsObjectMapper objectMapper;
+
     @Test
     void renderNotification() throws Exception
     {
@@ -108,16 +115,26 @@ public class MentionsNotificationDisplayerTest
 
         DefaultEvent mentionEvent = new DefaultEvent();
         HashMap<String, String> eventParameters = new HashMap<>();
-        eventParameters.put(MENTIONS_PARAMETER_KEY,
-            "{ \"userReference\": \"xwiki:XWiki.U1\", \"documentReference\": \"xwiki:XWiki.Doc\" }");
+        String mpValue = "{ \"userReference\": \"xwiki:XWiki.U1\", \"documentReference\": \"xwiki:XWiki.Doc\" }";
+        eventParameters.put(MENTIONS_PARAMETER_KEY, mpValue);
         mentionEvent.setParameters(eventParameters);
 
         when(this.templateManager.execute("mentions/mention.vm")).thenReturn(new XDOM(emptyList()));
 
+        MentionEventParams mentionEventParams =
+            new MentionEventParams().setDocumentReference(documentReference.toString())
+                .setUserReference(userReference.toString())
+                .setLocation(DOCUMENT);
+        when(this.objectMapper.unserialize(mpValue)).thenReturn(Optional.of(mentionEventParams));
+
         this.displayer.renderNotification(new CompositeEvent(mentionEvent));
 
         Map<Event, MentionView> paramsMap = new HashMap<>();
-        paramsMap.put(mentionEvent, new MentionView("http://wiki/user/1", "http://wiki/page/1", pageDocument));
+        MentionView mentionView = new MentionView()
+                                      .setAuthorURL("http://wiki/user/1")
+                                      .setDocumentURL("http://wiki/page/1")
+                                      .setDocument(pageDocument);
+        paramsMap.put(mentionEvent, mentionView);
         verify(scriptContext).setAttribute("compositeEventParams", paramsMap, ScriptContext.ENGINE_SCOPE);
         verify(this.templateManager).execute("mentions/mention.vm");
     }
