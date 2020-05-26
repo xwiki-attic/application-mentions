@@ -316,17 +316,17 @@
       </use>
     </class>
     <property>
-      <cache>long</cache>
+      <cache>forbid</cache>
     </property>
     <property>
       <code>.mention a {
-  background-color: #c2c2c25e;
+  background-color: $services.mentions.mentionsColor;
   border-radius: 8px;
   padding: 2px 5px 2px 5px;
 }
 
 .mention.user.self a {
-  background: rgba(255, 0, 0, 0.35);
+  background-color: $services.mentions.selfMentionsColor;
 }
 
 .mention.removed a {
@@ -340,7 +340,7 @@
       <name/>
     </property>
     <property>
-      <parse>0</parse>
+      <parse>1</parse>
     </property>
     <property>
       <use>always</use>

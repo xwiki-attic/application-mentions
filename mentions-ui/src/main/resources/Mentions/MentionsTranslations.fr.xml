@@ -44,5 +44,9 @@ rendering.macro.mention.parameter.displayChoice.name=Choix d'affichage
 rendering.macro.mention.parameter.displayChoice.description=Le choix d'affichage de la mention (supporté uniquement pour les mentions à des utilisateurs).
 org.xwiki.contrib.mentions.DisplayChoice.FIRST_AND_LAST_NAME=Prénom et nom de l'utilisateur
 org.xwiki.contrib.mentions.DisplayChoice.FIRST_NAME=Prénom de l'utilisateur uniquement
-org.xwiki.contrib.mentions.DisplayChoice.LOGIN=Nom d'utilisateur</content>
+org.xwiki.contrib.mentions.DisplayChoice.LOGIN=Nom d'utilisateur
+Mentions.MentionsConfigurationClass_mentionsColor=Couleur des mentions
+Mentions.MentionsConfigurationClass_mentionsColor.hint=La couleur des mentions (note: utilisé comme valeur d'un attribut css background-color).
+Mentions.MentionsConfigurationClass_selfMentionsColor=Couleurs des mentions pour sois même
+Mentions.MentionsConfigurationClass_mentionsColor.hint=La couleur des mentions à l'utilisateur courant (note: utilisé comme valeur d'un attribut css background-color).</content>
 </xwikidoc>
