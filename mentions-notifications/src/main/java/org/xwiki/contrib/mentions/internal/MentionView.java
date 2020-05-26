@@ -41,44 +41,80 @@ public class MentionView
 
     private String location;
 
+    /**
+     * 
+     * @return URL of the profile page of the mention author.
+     */
     public String getAuthorURL()
     {
         return this.authorURL;
     }
 
+    /**
+     * 
+     * @param authorURL URL of the profile page of the mention author
+     * @return the current object.
+     */
     public MentionView setAuthorURL(String authorURL)
     {
         this.authorURL = authorURL;
         return this;
     }
 
+    /**
+     * 
+     * @return URL of the document in which the mention occurred.
+     */
     public String getDocumentURL()
     {
         return this.documentURL;
     }
 
+    /**
+     * 
+     * @param documentURL URL of the document in which the mention occurred.
+     * @return @return the current object.
+     */
     public MentionView setDocumentURL(String documentURL)
     {
         this.documentURL = documentURL;
         return this;
     }
 
+    /**
+     * 
+     * @return Document in which the mention occurred.
+     */
     public XWikiDocument getDocument()
     {
         return this.document;
     }
 
+    /**
+     * 
+     * @param document Document in which the mention occurred.
+     * @return @return the current object.
+     */
     public MentionView setDocument(XWikiDocument document)
     {
         this.document = document;
         return this;
     }
 
+    /**
+     * 
+     * @return the location at which the mention occurred.
+     */
     public String getLocation()
     {
         return this.location;
     }
 
+    /**
+     * 
+     * @param location the location at which the mention occurred.
+     * @return @return the current object.
+     */
     public MentionView setLocation(String location)
     {
         this.location = location;
@@ -106,7 +142,8 @@ public class MentionView
                    .isEquals();
     }
 
-    @Override public int hashCode()
+    @Override
+    public int hashCode()
     {
         return new HashCodeBuilder(17, 37)
                    .append(this.authorURL)

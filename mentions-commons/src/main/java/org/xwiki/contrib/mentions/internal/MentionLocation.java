@@ -17,31 +17,41 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.xwiki.contrib.mentions;
+package org.xwiki.contrib.mentions.internal;
 
-import org.xwiki.component.annotation.Role;
-import org.xwiki.contrib.mentions.internal.MentionLocation;
-import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.stability.Unstable;
 
 /**
- * A service to send mentions notification.
+ * List the location where mentions can occur.
  *
  * @version $Id$
  * @since 1.0
  */
-@Role
 @Unstable
-public interface MentionNotificationService
+public enum MentionLocation
 {
     /**
-     * Send a notification on behalf of the author, informing the mentioned user that he/she is mentioned on the a page.
-     *
-     * @param authorReference the reference of the author of the mention.
-     * @param documentReference the document in which the mention has been done.
-     * @param mentionedIdentity the identity of the mentioned user.
-     * @param location The location of the mention. 
+     * Body of a document.
      */
-    void sendNotif(DocumentReference authorReference, DocumentReference documentReference, String mentionedIdentity,
-        MentionLocation location);
+    DOCUMENT,
+
+    /**
+     * In a comment.
+     */
+    COMMENT,
+
+    /**
+     * In an annotation.
+     */
+    ANNOTATION,
+
+    /**
+     * In a Application Within Minutes field.
+     */
+    AWM_FIELD,
+
+    /**
+     * When the location of the mention is unknown.
+     */
+    UNDEFINED
 }

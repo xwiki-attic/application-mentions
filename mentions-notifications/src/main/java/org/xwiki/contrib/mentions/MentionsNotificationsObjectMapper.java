@@ -19,29 +19,34 @@
  */
 package org.xwiki.contrib.mentions;
 
+import java.util.Optional;
+
 import org.xwiki.component.annotation.Role;
-import org.xwiki.contrib.mentions.internal.MentionLocation;
-import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.contrib.mentions.events.MentionEventParams;
 import org.xwiki.stability.Unstable;
 
 /**
- * A service to send mentions notification.
+ * Provides the operations to serialize and unserializa objects that holds mentions notifications datas.
  *
  * @version $Id$
  * @since 1.0
  */
 @Role
 @Unstable
-public interface MentionNotificationService
+public interface MentionsNotificationsObjectMapper
 {
     /**
-     * Send a notification on behalf of the author, informing the mentioned user that he/she is mentioned on the a page.
+     * Unserializes the data to {@link MentionEventParams}.
      *
-     * @param authorReference the reference of the author of the mention.
-     * @param documentReference the document in which the mention has been done.
-     * @param mentionedIdentity the identity of the mentioned user.
-     * @param location The location of the mention. 
+     * @param data The content to unserialize.
+     * @return The content serialized. {@link Optional#empty()} if the unserialization failed.
      */
-    void sendNotif(DocumentReference authorReference, DocumentReference documentReference, String mentionedIdentity,
-        MentionLocation location);
+    Optional<MentionEventParams> unserialize(String data);
+
+    /**
+     * Serializez a {@link MentionEventParams} into a json string.
+     * @param params The params.
+     * @return The resulting json string. {@link Optional#empty()} in case of error.
+     */
+    Optional<String> serialize(MentionEventParams params);
 }

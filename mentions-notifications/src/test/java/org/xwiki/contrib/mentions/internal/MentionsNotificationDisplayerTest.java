@@ -133,7 +133,8 @@ public class MentionsNotificationDisplayerTest
         MentionView mentionView = new MentionView()
                                       .setAuthorURL("http://wiki/user/1")
                                       .setDocumentURL("http://wiki/page/1")
-                                      .setDocument(pageDocument);
+                                      .setDocument(pageDocument)
+                                      .setLocation("DOCUMENT");
         paramsMap.put(mentionEvent, mentionView);
         verify(scriptContext).setAttribute("compositeEventParams", paramsMap, ScriptContext.ENGINE_SCOPE);
         verify(this.templateManager).execute("mentions/mention.vm");
