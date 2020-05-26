@@ -149,6 +149,7 @@
       const cct = globalUsers.map(function (x) {
         // insert an id because that's required by the mentions plugins.
         x.id = x.value;
+        x.cssClass = x.icon.cssClass;
         return x;
       });
       callback(cct);
@@ -164,7 +165,14 @@
         marker: '@',
         minChars: 0,
         itemsLimit: 6,
-        itemTemplate: '&lt;li data-id="{value}"&gt;{label}&lt;/li&gt;',
+        itemTemplate: '&lt;li data-id="{id}" class="ckeditor-autocomplete-item"&gt;'+
+              '&lt;div&gt;'+
+                '&lt;span class="ckeditor-autocomplete-item-icon-wrapper"&gt;'+
+                  '&lt;span class="{cssClass}"&gt;&lt;/span&gt;'+
+                '&lt;/span&gt;'+
+                '&lt;span class="ckeditor-autocomplete-item-label"&gt;{label}&lt;/span&gt;'+
+              '&lt;/div&gt;'+
+            '&lt;/li&gt;',
         outputTemplate: function (param) {
           var editor = ckeditor.instances[name];
           editor.once('afterInsertHtml', function () {
