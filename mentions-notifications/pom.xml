@@ -25,10 +25,10 @@
   <parent>
     <groupId>org.xwiki.contrib</groupId>
     <artifactId>application-mentions</artifactId>
-    <version>1.0</version>
+    <version>1.1-SNAPSHOT</version>
   </parent>
   <artifactId>mentions-notifications</artifactId>
-  <version>1.0</version>
+  <version>1.1-SNAPSHOT</version>
   <name>XWiki Mentions - Notifications</name>
   <packaging>jar</packaging>
   <properties>
