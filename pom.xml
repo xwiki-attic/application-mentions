@@ -74,6 +74,7 @@
     <module>mentions-api</module>
     <module>mentions-notifications</module>
     <module>mentions-ui</module>
+    <module>mentions-test</module>
   </modules>
   <build>
     <plugins>

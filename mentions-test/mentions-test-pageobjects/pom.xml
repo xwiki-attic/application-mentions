@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
@@ -19,29 +18,24 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
-
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
+    <artifactId>mentions-test</artifactId>
     <groupId>org.xwiki.contrib</groupId>
-    <artifactId>application-mentions</artifactId>
     <version>1.1-SNAPSHOT</version>
   </parent>
-  <artifactId>mentions-ui</artifactId>
-  <packaging>xar</packaging>
-  <name>XWiki Mentions - UI</name>
-  <description>Mention users in wiki content.</description>
-  <properties>
-    <!-- Name to display by the Extension Manager -->
-    <xwiki.extension.name>User Mentions Application</xwiki.extension.name>
-    <xwiki.extension.category>application</xwiki.extension.category>
-  </properties>
+  <artifactId>mentions-test-pageobjects</artifactId>
+  <name>XWiki Mentions - Test - Page Objects</name>
+  <description>Page objects for the Mentions Application.</description>
+  
   <dependencies>
     <dependency>
-      <groupId>org.xwiki.contrib</groupId>
-      <artifactId>mentions-api</artifactId>
-      <version>${project.version}</version>
-      <scope>runtime</scope>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-test-ui</artifactId>
+      <version>${platform.version}</version>
     </dependency>
   </dependencies>
 </project>

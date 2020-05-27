@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
@@ -19,29 +18,29 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
-
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.xwiki.contrib</groupId>
     <artifactId>application-mentions</artifactId>
+    <groupId>org.xwiki.contrib</groupId>
     <version>1.1-SNAPSHOT</version>
   </parent>
-  <artifactId>mentions-ui</artifactId>
-  <packaging>xar</packaging>
-  <name>XWiki Mentions - UI</name>
-  <description>Mention users in wiki content.</description>
-  <properties>
-    <!-- Name to display by the Extension Manager -->
-    <xwiki.extension.name>User Mentions Application</xwiki.extension.name>
-    <xwiki.extension.category>application</xwiki.extension.category>
-  </properties>
-  <dependencies>
-    <dependency>
-      <groupId>org.xwiki.contrib</groupId>
-      <artifactId>mentions-api</artifactId>
-      <version>${project.version}</version>
-      <scope>runtime</scope>
-    </dependency>
-  </dependencies>
+  <artifactId>mentions-test</artifactId>
+  <name>XWiki Mentions - Test</name>
+  <packaging>pom</packaging>
+  <description>Tests for the Mentions Application.</description>
+  <modules>
+    <module>mentions-test-pageobjects</module>
+  </modules>
+
+  <profiles>
+    <profile>
+      <id>docker</id>
+      <modules>
+        <module>mentions-test-docker</module>
+      </modules>
+    </profile>
+  </profiles>
 </project>
