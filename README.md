@@ -6,7 +6,7 @@ This application allows for the integration of user mentions on [XWiki](https://
 * [Documentation & Download](https://extensions.xwiki.org/xwiki/bin/view/Extension/Mentions%20Application/)  
 * [Issue Tracker](https://jira.xwiki.org/projects/XMENTIONS/) 
 * Communication: [Forum](https://forum.xwiki.org/c/Devs), [Matrix](#xwiki:matrix.xwiki.com)  
-* Minimal XWiki version supported: 12.4RC1
+* Minimal XWiki version supported: 12.4
 * License: LGPL 2.1  
-* [Translations]() (tbd)    
+* [Translations]() (tbd)
 * Continuous Integration Status: [![Build Status](http://ci.xwiki.org/job/XWiki%20Contrib/job/application-mentions/job/master/badge/icon)](http://ci.xwiki.org/job/XWiki%20Contrib/job/application-mentions/job/master/) 
