@@ -55,6 +55,9 @@
   <properties>
     <xwiki.release.jira.skip>false</xwiki.release.jira.skip>
     <xwiki.issueManagement.jira.id>XMENTIONS</xwiki.issueManagement.jira.id>
+    <!-- TODO: set parent-platform to 12.5 when released and remove the two properties below --> 
+    <platform.version>12.5-SNAPSHOT</platform.version>
+    <xwiki.enforcer.enforce-upper-bounds.skip>true</xwiki.enforcer.enforce-upper-bounds.skip>
   </properties>
   <dependencies>
     <dependency>
@@ -74,6 +77,7 @@
     <module>mentions-api</module>
     <module>mentions-notifications</module>
     <module>mentions-ui</module>
+    <module>mentions-test</module>
   </modules>
   <build>
     <plugins>
