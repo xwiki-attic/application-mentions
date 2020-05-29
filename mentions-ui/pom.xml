@@ -30,7 +30,7 @@
   <artifactId>mentions-ui</artifactId>
   <packaging>xar</packaging>
   <name>XWiki Mentions - UI</name>
-  <description>Macro to mention a user</description>
+  <description>Mention users in wiki content.</description>
   <properties>
     <!-- Name to display by the Extension Manager -->
     <xwiki.extension.name>User Mentions Application</xwiki.extension.name>
