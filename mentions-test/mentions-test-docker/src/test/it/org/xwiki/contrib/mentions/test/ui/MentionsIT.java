@@ -1,4 +1,4 @@
-package org.xwiki.contrib.mentions.test.ui;/*
+/*
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
@@ -17,6 +17,7 @@ package org.xwiki.contrib.mentions.test.ui;/*
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.xwiki.contrib.mentions.test.ui;
 
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -25,8 +26,6 @@ import org.xwiki.platform.notifications.test.po.NotificationsUserProfilePage;
 import org.xwiki.test.docker.junit5.TestReference;
 import org.xwiki.test.docker.junit5.UITest;
 import org.xwiki.test.ui.TestUtils;
-import org.xwiki.test.ui.po.ViewPage;
-import org.xwiki.test.ui.po.editor.WikiEditPage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.xwiki.test.ui.po.BootstrapSwitch.State.ON;
@@ -51,7 +50,7 @@ public class MentionsIT
     public static final String ALTER_FORMAT = "alert";
 
     /**
-     * A duplicate of {@link Runnable} wich allows to throw checked {@link Exception}.
+     * A duplicate of {@link Runnable} which allows to throw checked {@link Exception}.
      * @see  Runnable
      * @see <a href="https://www.baeldung.com/java-lambda-exceptions">Baeldung's Exceptions in Java 8 Lambda Expressions</a>.
      */
@@ -78,29 +77,24 @@ public class MentionsIT
     @Order(1)
     void basic(TestUtils setup, TestReference reference) throws Exception
     {
-        actAsSuperAdmin(setup, () -> {
+        runAsSuperAdmin(setup, () -> {
             // create the users.
             setup.createUser(U1_USERNAME, USERS_PWD, null);
             setup.createUser(U2_USERNAME, USERS_PWD, null);
         });
 
-        actAsUser(setup, U2_USERNAME, USERS_PWD, () -> {
+        runAsUser(setup, U2_USERNAME, USERS_PWD, () -> {
             // activate the notifications.
             NotificationsUserProfilePage.gotoPage(U2_USERNAME)
                 .setApplicationState(APPLICATION_ID, ALTER_FORMAT, ON);
         });
 
-        actAsUser(setup, U1_USERNAME, USERS_PWD, () -> {
-            // mention U2
-            ViewPage viewPage = setup.gotoPage(reference);
-            viewPage.waitUntilPageIsLoaded();
-            viewPage.edit();
-            WikiEditPage editPage = new WikiEditPage();
-            editPage.setContent("{{mention identifier=\"xwiki:XWiki.U2\" displayChoice=\"LOGIN\" /}}");
-            editPage.clickSaveAndView(true);
+        runAsUser(setup, U1_USERNAME, USERS_PWD, () -> {
+            setup.createPage(reference.getLastSpaceReference().getName(), reference.getName() + "Mention",
+                "{{mention identifier=\"xwiki:XWiki.U2\" displayChoice=\"LOGIN\" /}}", reference.getName());
         });
 
-        actAsUser(setup, U2_USERNAME, USERS_PWD, () -> {
+        runAsUser(setup, U2_USERNAME, USERS_PWD, () -> {
             setup.gotoPage("Main", "WebHome");
             // check that a notif is well received
             NotificationsTrayPage tray = new NotificationsTrayPage();
@@ -117,11 +111,10 @@ public class MentionsIT
      * @param actions The actions to be performed.
      * @throws Exception In case of errors.
      */
-    private void actAsUser(TestUtils setup, String username, String password, RunnableErr actions) throws Exception
+    private void runAsUser(TestUtils setup, String username, String password, RunnableErr actions) throws Exception
     {
         setup.login(username, password);
         actions.run();
-        setup.gotoPage(setup.getURLToLogout());
     }
 
     /**
@@ -131,10 +124,9 @@ public class MentionsIT
      * @param actions Some actions.
      * @throws Exception In case of error.
      */
-    private void actAsSuperAdmin(TestUtils setup, RunnableErr actions) throws Exception
+    private void runAsSuperAdmin(TestUtils setup, RunnableErr actions) throws Exception
     {
         setup.loginAsSuperAdmin();
         actions.run();
-        setup.gotoPage(setup.getURLToLogout());
     }
 }

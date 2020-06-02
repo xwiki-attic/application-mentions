@@ -77,7 +77,6 @@
     <module>mentions-api</module>
     <module>mentions-notifications</module>
     <module>mentions-ui</module>
-    <module>mentions-test</module>
   </modules>
   <build>
     <plugins>
@@ -87,4 +86,12 @@
       </plugin>
     </plugins>
   </build>
+  <profiles>
+    <profile>
+      <id>integration-tests</id>
+      <modules>
+        <module>mentions-test</module>
+      </modules>
+    </profile>
+  </profiles>
 </project>
