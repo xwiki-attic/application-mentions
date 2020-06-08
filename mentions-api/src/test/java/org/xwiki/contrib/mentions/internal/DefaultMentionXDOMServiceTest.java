@@ -27,8 +27,11 @@ import java.util.Optional;
 
 import javax.inject.Named;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.rendering.block.GroupBlock;
 import org.xwiki.rendering.block.MacroBlock;
 import org.xwiki.rendering.block.NewLineBlock;
@@ -71,6 +74,21 @@ public class DefaultMentionXDOMServiceTest
     @Named("xwiki/2.1")
     private Parser parser;
 
+    @MockComponent
+    private DocumentReferenceResolver<String> resolver;
+
+    private DocumentReference documentReferenceA;
+    private DocumentReference documentReferenceB;
+
+    @BeforeEach
+    void setup()
+    {
+        this.documentReferenceA = new DocumentReference("xwiki", "A", "A");
+        this.documentReferenceB = new DocumentReference("ywiki", "B", "B");
+        when(this.resolver.resolve("A")).thenReturn(this.documentReferenceA);
+        when(this.resolver.resolve("B")).thenReturn(this.documentReferenceB);
+    }
+
     @Test
     void listMentionMacros()
     {
@@ -87,44 +105,44 @@ public class DefaultMentionXDOMServiceTest
     @Test
     void countByIdentifierEmpty()
     {
-        Map<String, Long> actual = this.xdomService.countByIdentifier(emptyList());
+        Map<DocumentReference, Long> actual = this.xdomService.countByIdentifier(emptyList());
         assertTrue(actual.isEmpty());
     }
 
     @Test
     void countByIdentifierOne()
     {
-        Map<String, Long> actual = this.xdomService.countByIdentifier(singletonList(
+        Map<DocumentReference, Long> actual = this.xdomService.countByIdentifier(singletonList(
             initMentionMacro("A")
         ));
-        HashMap<String, Long> expected = new HashMap<>();
-        expected.put("A", 1L);
+        HashMap<DocumentReference, Long> expected = new HashMap<>();
+        expected.put(this.documentReferenceA, 1L);
         assertEquals(expected, actual);
     }
 
     @Test
     void countByIdentifierTwo()
     {
-        Map<String, Long> actual = this.xdomService.countByIdentifier(asList(
+        Map<DocumentReference, Long> actual = this.xdomService.countByIdentifier(asList(
             initMentionMacro("A"),
             initMentionMacro("A")
         ));
-        HashMap<String, Long> expected = new HashMap<>();
-        expected.put("A", 2L);
+        HashMap<DocumentReference, Long> expected = new HashMap<>();
+        expected.put(this.documentReferenceA, 2L);
         assertEquals(expected, actual);
     }
 
     @Test
     void countByIdentifierThree()
     {
-        Map<String, Long> actual = this.xdomService.countByIdentifier(asList(
+        Map<DocumentReference, Long> actual = this.xdomService.countByIdentifier(asList(
             initMentionMacro("A"),
             initMentionMacro("B"),
             initMentionMacro("A")
         ));
-        HashMap<String, Long> expected = new HashMap<>();
-        expected.put("B", 1L);
-        expected.put("A", 2L);
+        HashMap<DocumentReference, Long> expected = new HashMap<>();
+        expected.put(this.documentReferenceB, 1L);
+        expected.put(this.documentReferenceA, 2L);
         assertEquals(expected, actual);
     }
 

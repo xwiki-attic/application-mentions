@@ -19,13 +19,14 @@
  */
 package org.xwiki.contrib.mentions.internal;
 
-import java.util.HashSet;
+import java.util.Collections;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
-import org.xwiki.contrib.mentions.MentionIdentityService;
 import org.xwiki.contrib.mentions.events.MentionEvent;
 import org.xwiki.contrib.mentions.events.MentionEventParams;
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.model.reference.EntityReferenceSerializer;
 import org.xwiki.observation.ObservationManager;
 import org.xwiki.test.junit5.mockito.ComponentTest;
 import org.xwiki.test.junit5.mockito.InjectMockComponents;
@@ -49,25 +50,24 @@ public class DefaultMentionNotificationServiceTest
     private DefaultMentionNotificationService notificationService;
 
     @MockComponent
-    private MentionIdentityService identityService;
+    private ObservationManager observationManager;
 
     @MockComponent
-    private ObservationManager observationManager;
+    private EntityReferenceSerializer<String> serializer;
 
     @Test
     void sendNotif()
     {
         DocumentReference authorReference = new DocumentReference("xwiki", "XWiki", "Author");
         DocumentReference documentReference = new DocumentReference("xwiki", "XWiki", "Doc");
-        String mentionedIdentitiy = "U2";
+        DocumentReference mentionedIdentity = new DocumentReference("xwiki", "XWiki", "U2");
 
-        HashSet<String> identity = new HashSet<>();
-        identity.add("xwiki:XWiki.U2");
-        when(this.identityService.resolveIdentity("U2")).thenReturn(identity);
+        Set<String> eventTarget = Collections.singleton("xwiki:XWiki.U2");
+        when(this.serializer.serialize(mentionedIdentity)).thenReturn("xwiki:XWiki.U2");
 
-        this.notificationService.sendNotif(authorReference, documentReference, mentionedIdentitiy, COMMENT);
+        this.notificationService.sendNotif(authorReference, documentReference, mentionedIdentity, COMMENT);
 
-        MentionEvent event = new MentionEvent(identity,
+        MentionEvent event = new MentionEvent(eventTarget,
             new MentionEventParams()
                 .setUserReference(authorReference.toString())
                 .setDocumentReference(documentReference.toString())

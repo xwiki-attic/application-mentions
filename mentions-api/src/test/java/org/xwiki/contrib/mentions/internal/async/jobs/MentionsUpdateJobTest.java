@@ -116,17 +116,18 @@ public class MentionsUpdateJobTest
         );
         when(this.xdomService.listMentionMacros(dom2Mentions)).thenReturn(l2mentions);
 
-        Map<String, Long> mentionsCountL1 = new HashMap<>();
-        mentionsCountL1.put("u1", 1L);
+        DocumentReference u1 = new DocumentReference("xwiki", "XWiki", "u1");
+        Map<DocumentReference, Long> mentionsCountL1 = new HashMap<>();
+        mentionsCountL1.put(u1, 1L);
         when(this.xdomService.countByIdentifier(l1mention)).thenReturn(mentionsCountL1);
-        Map<String, Long> mentionsCountL2 = new HashMap<>();
-        mentionsCountL2.put("u1", 2L);
+        Map<DocumentReference, Long> mentionsCountL2 = new HashMap<>();
+        mentionsCountL2.put(u1, 2L);
         when(this.xdomService.countByIdentifier(l2mentions)).thenReturn(mentionsCountL2);
         
         this.job.initialize(new MentionsUpdatedRequest(this.newDocument, this.oldDocument, authorReference));
         this.job.runInternal();
 
-        verify(this.notificationService).sendNotif(authorReference, documentReference, "u1", DOCUMENT);
+        verify(this.notificationService).sendNotif(authorReference, documentReference, u1, DOCUMENT);
     }
 
     @Test
@@ -159,15 +160,16 @@ public class MentionsUpdateJobTest
         List<MacroBlock> newCommentNewMentions = singletonList(new MacroBlock("comment", parameters, false));
         when(this.xdomService.listMentionMacros(newCommentXDOM)).thenReturn(newCommentNewMentions);
 
-        Map<String, Long> mentionsCount = new HashMap<>();
-        mentionsCount.put("XWiki.U1", 1L);
+        DocumentReference U1 = new DocumentReference("xwiki", "XWiki", "U1");
+        Map<DocumentReference, Long> mentionsCount = new HashMap<>();
+        mentionsCount.put(U1, 1L);
         when(this.xdomService.countByIdentifier(newCommentNewMentions)).thenReturn(mentionsCount);
        
 
         this.job.initialize(new MentionsUpdatedRequest(this.newDocument, this.oldDocument, authorReference));
         this.job.runInternal();
 
-        verify(this.notificationService).sendNotif(authorReference, documentReference, "XWiki.U1", ANNOTATION);
+        verify(this.notificationService).sendNotif(authorReference, documentReference, U1, ANNOTATION);
     }
 
     @Test
@@ -212,14 +214,15 @@ public class MentionsUpdateJobTest
         List<MacroBlock> newCommentNewMentions = singletonList(new MacroBlock("comment", parameters, false));
         when(this.xdomService.listMentionMacros(newCommentXDOM)).thenReturn(newCommentNewMentions);
 
-        Map<String, Long> mentionsCount = new HashMap<>();
-        mentionsCount.put("XWiki.U1", 1L);
+        DocumentReference U1 = new DocumentReference("xwiki", "XWiki", "U1");
+        Map<DocumentReference, Long> mentionsCount = new HashMap<>();
+        mentionsCount.put(U1, 1L);
         when(this.xdomService.countByIdentifier(newCommentNewMentions)).thenReturn(mentionsCount);
 
         this.job.initialize(new MentionsUpdatedRequest(this.newDocument, this.oldDocument, authorReference));
         this.job.runInternal();
 
-        verify(this.notificationService).sendNotif(authorReference, documentReference, "XWiki.U1", COMMENT);
+        verify(this.notificationService).sendNotif(authorReference, documentReference, U1, COMMENT);
     }
 
     @Test

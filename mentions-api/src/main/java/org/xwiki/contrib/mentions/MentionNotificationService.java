@@ -42,6 +42,6 @@ public interface MentionNotificationService
      * @param mentionedIdentity the identity of the mentioned user.
      * @param location The location of the mention. 
      */
-    void sendNotif(DocumentReference authorReference, DocumentReference documentReference, String mentionedIdentity,
-        MentionLocation location);
+    void sendNotif(DocumentReference authorReference, DocumentReference documentReference,
+        DocumentReference mentionedIdentity, MentionLocation location);
 }

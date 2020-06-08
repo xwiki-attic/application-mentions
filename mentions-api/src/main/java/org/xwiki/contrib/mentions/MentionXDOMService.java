@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.xwiki.component.annotation.Role;
+import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.rendering.block.MacroBlock;
 import org.xwiki.rendering.block.XDOM;
 import org.xwiki.stability.Unstable;
@@ -50,7 +51,7 @@ public interface MentionXDOMService
      * @param mentions the list of mentions.
      * @return the map of number of mentions per identifier.
      */
-    Map<String, Long> countByIdentifier(List<MacroBlock> mentions);
+    Map<DocumentReference, Long> countByIdentifier(List<MacroBlock> mentions);
 
     /**
      *

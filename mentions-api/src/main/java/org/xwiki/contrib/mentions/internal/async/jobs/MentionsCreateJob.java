@@ -84,7 +84,7 @@ public class MentionsCreateJob extends AbstractJob<MentionsCreatedRequest, Menti
     {
         List<MacroBlock> blocks = this.xdomService.listMentionMacros(xdom);
 
-        Map<String, Long> counts = this.xdomService.countByIdentifier(blocks);
+        Map<DocumentReference, Long> counts = this.xdomService.countByIdentifier(blocks);
 
         counts.keySet()
             .forEach(identifier -> this.notificationService.sendNotif(authorReference, documentReference, identifier,

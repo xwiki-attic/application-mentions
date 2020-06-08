@@ -19,15 +19,17 @@
  */
 package org.xwiki.contrib.mentions.internal;
 
+import java.util.Collections;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.xwiki.component.annotation.Component;
-import org.xwiki.contrib.mentions.MentionIdentityService;
 import org.xwiki.contrib.mentions.MentionNotificationService;
 import org.xwiki.contrib.mentions.events.MentionEvent;
 import org.xwiki.contrib.mentions.events.MentionEventParams;
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.model.reference.EntityReferenceSerializer;
 import org.xwiki.observation.ObservationManager;
 
 import static org.xwiki.contrib.mentions.events.MentionEvent.EVENT_TYPE;
@@ -43,20 +45,21 @@ import static org.xwiki.contrib.mentions.events.MentionEvent.EVENT_TYPE;
 public class DefaultMentionNotificationService implements MentionNotificationService
 {
     @Inject
-    private MentionIdentityService identityService;
+    private ObservationManager observationManager;
 
     @Inject
-    private ObservationManager observationManager;
+    private EntityReferenceSerializer<String> serializer;
 
     @Override
     public void sendNotif(DocumentReference authorReference, DocumentReference documentReference,
-        String mentionedIdentity, MentionLocation location)
+        DocumentReference mentionedIdentity, MentionLocation location)
     {
         MentionEventParams params = new MentionEventParams()
                                         .setUserReference(authorReference.toString())
                                         .setDocumentReference(documentReference.toString())
                                         .setLocation(location);
-        MentionEvent event = new MentionEvent(this.identityService.resolveIdentity(mentionedIdentity), params);
+        MentionEvent event =
+            new MentionEvent(Collections.singleton(this.serializer.serialize(mentionedIdentity)), params);
         this.observationManager.notify(event, "org.xwiki.contrib:mentions-notifications", EVENT_TYPE);
     }
 }

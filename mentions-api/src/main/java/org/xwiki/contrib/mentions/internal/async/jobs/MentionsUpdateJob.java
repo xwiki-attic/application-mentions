@@ -148,8 +148,8 @@ public class MentionsUpdateJob extends AbstractJob<MentionsUpdatedRequest, Menti
         List<MacroBlock> oldMentions = this.xdomService.listMentionMacros(oldXdom);
         List<MacroBlock> newMentions = this.xdomService.listMentionMacros(newXdom);
 
-        Map<String, Long> oldCounts = this.xdomService.countByIdentifier(oldMentions);
-        Map<String, Long> newCounts = this.xdomService.countByIdentifier(newMentions);
+        Map<DocumentReference, Long> oldCounts = this.xdomService.countByIdentifier(oldMentions);
+        Map<DocumentReference, Long> newCounts = this.xdomService.countByIdentifier(newMentions);
 
         // for each user, we check its number of mentions and compare it to the same number on the 
         // old document (or 0 if the user wan't mentionned before).

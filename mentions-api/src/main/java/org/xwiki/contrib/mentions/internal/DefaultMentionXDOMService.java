@@ -33,6 +33,8 @@ import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.contrib.mentions.MentionXDOMService;
+import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.rendering.block.Block;
 import org.xwiki.rendering.block.MacroBlock;
 import org.xwiki.rendering.block.XDOM;
@@ -62,6 +64,9 @@ public class DefaultMentionXDOMService implements MentionXDOMService
     @Named("xwiki/2.1")
     private Parser parser;
 
+    @Inject
+    private DocumentReferenceResolver<String> documentReferenceResolver;
+
     private static boolean matchMentionMacro(Block block)
     {
         return block instanceof MacroBlock && Objects.equals(((MacroBlock) block).getId(), MENTION_MACRO_NAME);
@@ -74,12 +79,13 @@ public class DefaultMentionXDOMService implements MentionXDOMService
     }
 
     @Override
-    public Map<String, Long> countByIdentifier(List<MacroBlock> mentions)
+    public Map<DocumentReference, Long> countByIdentifier(List<MacroBlock> mentions)
     {
-        Map<String, Long> ret = new HashMap<>();
+        Map<DocumentReference, Long> ret = new HashMap<>();
         for (MacroBlock block : mentions) {
             String identifier = block.getParameter(IDENTIFIER_PARAM_NAME);
-            ret.merge(identifier, 1L, Long::sum);
+            DocumentReference reference = this.documentReferenceResolver.resolve(identifier);
+            ret.merge(reference, 1L, Long::sum);
         }
         return ret;
     }

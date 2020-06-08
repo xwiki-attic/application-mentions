@@ -97,14 +97,15 @@ public class MentionsCreateJobTest
         when(this.document.getXDOM()).thenReturn(xdom);
         List<MacroBlock> mentions = singletonList(mention);
         when(this.xdomService.listMentionMacros(xdom)).thenReturn(mentions);
-        Map<String, Long> value = new HashMap<>();
-        value.put("XWiki.U1", 1L);
+        DocumentReference user1 = new DocumentReference("xwiki", "XWiki", "U1");
+        Map<DocumentReference, Long> value = new HashMap<>();
+        value.put(user1, 1L);
         when(this.xdomService.countByIdentifier(mentions)).thenReturn(value);
 
         this.job.initialize(new MentionsCreatedRequest(this.document));
         this.job.runInternal();
 
-        verify(this.notificationService).sendNotif(authorReference, documentReference, "XWiki.U1", DOCUMENT);
+        verify(this.notificationService).sendNotif(authorReference, documentReference, user1, DOCUMENT);
     }
 
     @Test
@@ -174,8 +175,9 @@ public class MentionsCreateJobTest
         when(this.xdomService.listMentionMacros(xdom1)).thenReturn(mentionsBlocks);
         when(this.xdomService.listMentionMacros(xdom2)).thenReturn(emptyList());
 
-        Map<String, Long> mentionsCount = new HashMap<>();
-        mentionsCount.put("XWiki.User", 1L);
+        DocumentReference user = new DocumentReference("xwiki", "XWiki", "User");
+        Map<DocumentReference, Long> mentionsCount = new HashMap<>();
+        mentionsCount.put(user, 1L);
         when(this.xdomService.countByIdentifier(mentionsBlocks)).thenReturn(mentionsCount);
 
         this.job.initialize(new MentionsCreatedRequest(this.document));
@@ -186,7 +188,7 @@ public class MentionsCreateJobTest
         verify(this.xdomService).listMentionMacros(xdom1);
         verify(this.xdomService).listMentionMacros(xdom2);
         verify(this.xdomService).countByIdentifier(mentionsBlocks);
-        verify(this.notificationService).sendNotif(authorReference, documentReference, "XWiki.User", AWM_FIELD);
+        verify(this.notificationService).sendNotif(authorReference, documentReference, user, AWM_FIELD);
     }
 
     @Test
