@@ -43,8 +43,6 @@
       <version>${project.version}</version>
       <scope>runtime</scope>
     </dependency>
-
-    <!--  Third party dependencies-->
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-platform-notifications-ui</artifactId>

@@ -33,7 +33,6 @@
   <packaging>jar</packaging>
   <properties>
     <xwiki.jacoco.instructionRatio>0.66</xwiki.jacoco.instructionRatio>
-    <xwiki.pitest.mutationThreshold>71</xwiki.pitest.mutationThreshold>
     <!-- This component must be installed at the farm level because 
     org.xwiki.eventstream.store.internal.RecordableEventListener.convertEvent uses 
     org.xwiki.component.manager.ComponentManager -->
