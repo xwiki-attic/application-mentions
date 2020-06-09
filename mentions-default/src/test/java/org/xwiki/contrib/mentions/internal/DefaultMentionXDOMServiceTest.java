@@ -20,6 +20,8 @@
 package org.xwiki.contrib.mentions.internal;
 
 import java.io.Reader;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -106,44 +108,44 @@ public class DefaultMentionXDOMServiceTest
     @Test
     void countByIdentifierEmpty()
     {
-        Map<DocumentReference, Long> actual = this.xdomService.countByIdentifier(emptyList());
+        Map<DocumentReference, List<String>> actual = this.xdomService.countByIdentifier(emptyList());
         assertTrue(actual.isEmpty());
     }
 
     @Test
     void countByIdentifierOne()
     {
-        Map<DocumentReference, Long> actual = this.xdomService.countByIdentifier(singletonList(
-            initMentionMacro("A")
+        Map<DocumentReference, List<String>> actual = this.xdomService.countByIdentifier(singletonList(
+            initMentionMacro("A", "A1")
         ));
-        HashMap<DocumentReference, Long> expected = new HashMap<>();
-        expected.put(this.documentReferenceA, 1L);
+        HashMap<DocumentReference, List<String>> expected = new HashMap<>();
+        expected.put(this.documentReferenceA, Collections.singletonList("A1"));
         assertEquals(expected, actual);
     }
 
     @Test
     void countByIdentifierTwo()
     {
-        Map<DocumentReference, Long> actual = this.xdomService.countByIdentifier(asList(
-            initMentionMacro("A"),
-            initMentionMacro("A")
+        Map<DocumentReference, List<String>> actual = this.xdomService.countByIdentifier(asList(
+            initMentionMacro("A", "A1"),
+            initMentionMacro("A", "A2")
         ));
-        HashMap<DocumentReference, Long> expected = new HashMap<>();
-        expected.put(this.documentReferenceA, 2L);
+        HashMap<DocumentReference, List<String>> expected = new HashMap<>();
+        expected.put(this.documentReferenceA, Arrays.asList("A1", "A2"));
         assertEquals(expected, actual);
     }
 
     @Test
     void countByIdentifierThree()
     {
-        Map<DocumentReference, Long> actual = this.xdomService.countByIdentifier(asList(
-            initMentionMacro("A"),
-            initMentionMacro("B"),
-            initMentionMacro("A")
+        Map<DocumentReference, List<String>> actual = this.xdomService.countByIdentifier(asList(
+            initMentionMacro("A", "A1"),
+            initMentionMacro("B", "B1"),
+            initMentionMacro("A", "A2")
         ));
-        HashMap<DocumentReference, Long> expected = new HashMap<>();
-        expected.put(this.documentReferenceB, 1L);
-        expected.put(this.documentReferenceA, 2L);
+        HashMap<DocumentReference, List<String>> expected = new HashMap<>();
+        expected.put(this.documentReferenceB, Collections.singletonList("B1"));
+        expected.put(this.documentReferenceA, Arrays.asList("A1", "A2"));
         assertEquals(expected, actual);
     }
 
@@ -172,10 +174,11 @@ public class DefaultMentionXDOMServiceTest
         assertEquals(Optional.empty(), actual);
     }
 
-    private MacroBlock initMentionMacro(String identifier)
+    private MacroBlock initMentionMacro(String identifier, String anchor)
     {
         HashMap<String, String> parameters = new HashMap<>();
         parameters.put("identifier", identifier);
+        parameters.put("anchor", anchor);
         return new MacroBlock("mention", parameters, false);
     }
 }

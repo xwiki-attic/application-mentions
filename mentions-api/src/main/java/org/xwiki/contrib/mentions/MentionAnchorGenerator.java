@@ -19,44 +19,25 @@
  */
 package org.xwiki.contrib.mentions;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
 import org.xwiki.component.annotation.Role;
-import org.xwiki.model.reference.DocumentReference;
-import org.xwiki.rendering.block.MacroBlock;
-import org.xwiki.rendering.block.XDOM;
 import org.xwiki.stability.Unstable;
 
 /**
- * A service for manipulating XDOM trees in the context of the mentions.
+ * A component that aims at generating unique anchors in a page.
  *
  * @version $Id$
- * @since 1.0
+ * @since 1.1
  */
 @Role
 @Unstable
-public interface MentionXDOMService
+public interface MentionAnchorGenerator
 {
     /**
-     * Search for the mentions macro inside an {@link XDOM}.
-     * @param xdom The xdom.
-     * @return The list of mentions macro found in the XDOM.
-     */
-    List<MacroBlock> listMentionMacros(XDOM xdom);
-
-    /**
-     * Count the number of mentions per identifier.
-     * @param mentions the list of mentions.
-     * @return the map of number of mentions per identifier.
-     */
-    Map<DocumentReference, Long> countByIdentifier(List<MacroBlock> mentions);
-
-    /**
+     * Generate a new anchor for the given mention identifier.
+     * Note that this generated anchor should be unique as much as possible.
      *
-     * @param payload the string to parse.
-     * @return The result of the parsing. Empty if the parsing failed.
+     * @param identifier the target of the mention.
+     * @return a {@code String} to be used as an anchor in the mention.
      */
-    Optional<XDOM> parse(String payload);
+    String getNextAnchor(String identifier);
 }

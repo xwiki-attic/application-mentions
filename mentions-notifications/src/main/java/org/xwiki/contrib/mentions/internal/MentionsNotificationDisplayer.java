@@ -19,6 +19,7 @@
  */
 package org.xwiki.contrib.mentions.internal;
 
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +34,6 @@ import javax.script.ScriptContext;
 import org.slf4j.Logger;
 import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.component.annotation.Component;
-import org.xwiki.contrib.mentions.MentionsNotificationsObjectMapper;
 import org.xwiki.contrib.mentions.events.MentionEvent;
 import org.xwiki.contrib.mentions.events.MentionEventParams;
 import org.xwiki.eventstream.Event;
@@ -68,6 +68,8 @@ public class MentionsNotificationDisplayer implements NotificationDisplayer
     private static final String EVENT_BINDING_NAME = "compositeEvent";
 
     private static final String EVENT_PARAMS_BINDING_NAME = "compositeEventParams";
+
+    private static final String DEFAULT_ACTION = "view";
 
     @Inject
     private TemplateManager templateManager;
@@ -118,6 +120,15 @@ public class MentionsNotificationDisplayer implements NotificationDisplayer
         return ret;
     }
 
+    private String getExternalURL(XWikiDocument document, String anchor)
+    {
+        XWikiContext context = this.contextProvider.get();
+        // Code inspired by XWikiDocument#getExternalURL
+        URL url = context.getURLFactory()
+            .createExternalURL(document.getSpace(), document.getName(), DEFAULT_ACTION, null, anchor, context);
+        return url.toString();
+    }
+
     private Optional<MentionView> convert(MentionEventParams mentionEventParams)
     {
         DocumentReference userReference =
@@ -127,11 +138,10 @@ public class MentionsNotificationDisplayer implements NotificationDisplayer
         
         try {
             XWikiContext context = this.contextProvider.get();
-            String urlAction = "view";
             XWikiDocument userDocumentInstance = (XWikiDocument) this.documentAccess.getDocumentInstance(userReference);
             XWikiDocument document = (XWikiDocument) this.documentAccess.getDocumentInstance(documentReference);
-            String authorURL = userDocumentInstance.getExternalURL(urlAction, context);
-            String documentURL = document.getExternalURL(urlAction, context);
+            String authorURL = userDocumentInstance.getExternalURL(DEFAULT_ACTION, context);
+            String documentURL = getExternalURL(document, mentionEventParams.getAnchor());
             MentionView mentionView = new MentionView()
                                           .setAuthorURL(authorURL)
                                           .setDocumentURL(documentURL)

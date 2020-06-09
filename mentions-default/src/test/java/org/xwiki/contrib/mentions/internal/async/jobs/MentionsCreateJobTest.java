@@ -20,6 +20,7 @@
 package org.xwiki.contrib.mentions.internal.async.jobs;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +29,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.xwiki.contrib.mentions.MentionNotificationService;
-import org.xwiki.contrib.mentions.MentionXDOMService;
+import org.xwiki.contrib.mentions.internal.MentionXDOMService;
 import org.xwiki.contrib.mentions.internal.async.MentionsCreatedRequest;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.rendering.block.MacroBlock;
@@ -84,6 +85,7 @@ public class MentionsCreateJobTest
         DocumentReference documentReference = new DocumentReference("xwiki", "XWiki", "Doc");
         HashMap<String, String> mentionParams = new HashMap<>();
         mentionParams.put("identifier", "XWiki.U1");
+        mentionParams.put("anchor", "anchor1");
         MacroBlock mention = new MacroBlock("mention", mentionParams, false);
         XDOM xdom = new XDOM(singletonList(new ParagraphBlock(asList(
             new NewLineBlock(),
@@ -98,14 +100,14 @@ public class MentionsCreateJobTest
         List<MacroBlock> mentions = singletonList(mention);
         when(this.xdomService.listMentionMacros(xdom)).thenReturn(mentions);
         DocumentReference user1 = new DocumentReference("xwiki", "XWiki", "U1");
-        Map<DocumentReference, Long> value = new HashMap<>();
-        value.put(user1, 1L);
+        Map<DocumentReference, List<String>> value = new HashMap<>();
+        value.put(user1, Collections.singletonList("anchor1"));
         when(this.xdomService.countByIdentifier(mentions)).thenReturn(value);
 
         this.job.initialize(new MentionsCreatedRequest(this.document));
         this.job.runInternal();
 
-        verify(this.notificationService).sendNotif(authorReference, documentReference, user1, DOCUMENT);
+        verify(this.notificationService).sendNotif(authorReference, documentReference, user1, DOCUMENT, "anchor1");
     }
 
     @Test
@@ -129,7 +131,7 @@ public class MentionsCreateJobTest
         this.job.initialize(new MentionsCreatedRequest(this.document));
         this.job.runInternal();
 
-        verify(this.notificationService, never()).sendNotif(any(), any(), any(), any());
+        verify(this.notificationService, never()).sendNotif(any(), any(), any(), any(), any());
     }
 
     @Test
@@ -176,8 +178,8 @@ public class MentionsCreateJobTest
         when(this.xdomService.listMentionMacros(xdom2)).thenReturn(emptyList());
 
         DocumentReference user = new DocumentReference("xwiki", "XWiki", "User");
-        Map<DocumentReference, Long> mentionsCount = new HashMap<>();
-        mentionsCount.put(user, 1L);
+        Map<DocumentReference, List<String>> mentionsCount = new HashMap<>();
+        mentionsCount.put(user, Collections.singletonList("anchor1"));
         when(this.xdomService.countByIdentifier(mentionsBlocks)).thenReturn(mentionsCount);
 
         this.job.initialize(new MentionsCreatedRequest(this.document));
@@ -188,7 +190,7 @@ public class MentionsCreateJobTest
         verify(this.xdomService).listMentionMacros(xdom1);
         verify(this.xdomService).listMentionMacros(xdom2);
         verify(this.xdomService).countByIdentifier(mentionsBlocks);
-        verify(this.notificationService).sendNotif(authorReference, documentReference, user, AWM_FIELD);
+        verify(this.notificationService).sendNotif(authorReference, documentReference, user, AWM_FIELD, "anchor1");
     }
 
     @Test

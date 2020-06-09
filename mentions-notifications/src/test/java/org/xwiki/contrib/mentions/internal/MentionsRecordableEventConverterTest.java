@@ -24,7 +24,6 @@ import java.util.HashSet;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
-import org.xwiki.contrib.mentions.MentionsNotificationsObjectMapper;
 import org.xwiki.contrib.mentions.events.MentionEvent;
 import org.xwiki.contrib.mentions.events.MentionEventParams;
 import org.xwiki.eventstream.Event;

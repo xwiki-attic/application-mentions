@@ -41,6 +41,8 @@ public class MentionEventParams
 
     private MentionLocation location = UNDEFINED;
 
+    private String anchor;
+
     /**
      *
      * @return The the user doing the mention.
@@ -101,6 +103,25 @@ public class MentionEventParams
         return this;
     }
 
+    /**
+     * @return the anchor to be used for the link to the mention.
+     */
+    public String getAnchor()
+    {
+        return anchor;
+    }
+
+    /**
+     *
+     * @param anchor the anchor to be used to link to the mention.
+     * @return the current object.
+     */
+    public MentionEventParams setAnchor(String anchor)
+    {
+        this.anchor = anchor;
+        return this;
+    }
+
     @Override
     public boolean equals(Object o)
     {
@@ -118,6 +139,7 @@ public class MentionEventParams
                    .append(this.userReference, that.userReference)
                    .append(this.documentReference, that.documentReference)
                    .append(this.location, that.location)
+                   .append(this.anchor, that.anchor)
                    .isEquals();
     }
 
@@ -128,6 +150,7 @@ public class MentionEventParams
                    .append(this.userReference)
                    .append(this.documentReference)
                    .append(this.location)
+                   .append(this.anchor)
                    .toHashCode();
     }
 
@@ -138,6 +161,7 @@ public class MentionEventParams
                    .append("userReference", this.getUserReference())
                    .append("documentReference", this.getDocumentReference())
                    .append("location", this.getLocation())
+                   .append("anchorId", this.getAnchor())
                    .build();
     }
 }

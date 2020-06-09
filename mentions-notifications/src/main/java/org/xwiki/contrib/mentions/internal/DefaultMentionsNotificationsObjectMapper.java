@@ -30,7 +30,6 @@ import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.phase.Initializable;
-import org.xwiki.contrib.mentions.MentionsNotificationsObjectMapper;
 import org.xwiki.contrib.mentions.events.MentionEventParams;
 
 import com.fasterxml.jackson.databind.ObjectMapper;

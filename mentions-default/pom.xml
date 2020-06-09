@@ -30,12 +30,15 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>mentions-default</artifactId>
-  <version>1.1-SNAPSHOT</version>
   <name>XWiki Mentions - Default</name>
   <packaging>jar</packaging>
   <description>Default implementation of the Mentions components.</description>
   <properties>
     <xwiki.jacoco.instructionRatio>0.83</xwiki.jacoco.instructionRatio>
+    <!-- This component must be installed at the farm level because
+    org.xwiki.eventstream.store.internal.RecordableEventListener.convertEvent uses
+    org.xwiki.component.manager.ComponentManager. To be removed once XWIKI-17359 is fixed. -->
+    <xwiki.extension.namespaces>{root}</xwiki.extension.namespaces>
   </properties>
   <dependencies>
     <dependency>

@@ -28,7 +28,7 @@ import javax.inject.Named;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.contrib.mentions.MentionNotificationService;
-import org.xwiki.contrib.mentions.MentionXDOMService;
+import org.xwiki.contrib.mentions.internal.MentionXDOMService;
 import org.xwiki.contrib.mentions.MentionLocation;
 import org.xwiki.contrib.mentions.internal.async.MentionsCreatedRequest;
 import org.xwiki.contrib.mentions.internal.async.MentionsCreatedStatus;
@@ -84,11 +84,10 @@ public class MentionsCreateJob extends AbstractJob<MentionsCreatedRequest, Menti
     {
         List<MacroBlock> blocks = this.xdomService.listMentionMacros(xdom);
 
-        Map<DocumentReference, Long> counts = this.xdomService.countByIdentifier(blocks);
+        Map<DocumentReference, List<String>> counts = this.xdomService.countByIdentifier(blocks);
 
-        counts.keySet()
-            .forEach(identifier -> this.notificationService.sendNotif(authorReference, documentReference, identifier,
-                location));
+        counts.forEach((key, value) -> value.forEach(anchorId ->
+                this.notificationService.sendNotif(authorReference, documentReference, key, location, anchorId)));
     }
 
     private void traverseXObjects(Map<DocumentReference, List<BaseObject>> xObjects, DocumentReference authorReference,

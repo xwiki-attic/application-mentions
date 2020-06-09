@@ -64,13 +64,15 @@ public class DefaultMentionNotificationServiceTest
         Set<String> eventTarget = Collections.singleton("xwiki:XWiki.U2");
         when(this.serializer.serialize(mentionedIdentity)).thenReturn("xwiki:XWiki.U2");
 
-        this.notificationService.sendNotif(authorReference, documentReference, mentionedIdentity, MentionLocation.COMMENT);
+        this.notificationService.sendNotif(authorReference, documentReference, mentionedIdentity,
+            MentionLocation.COMMENT, "anchor");
 
         MentionEvent event = new MentionEvent(eventTarget,
             new MentionEventParams()
                 .setUserReference(authorReference.toString())
                 .setDocumentReference(documentReference.toString())
                 .setLocation(MentionLocation.COMMENT)
+                .setAnchor("anchor")
         );
         verify(this.observationManager).notify(event, "org.xwiki.contrib:mentions-notifications", MentionEvent.EVENT_TYPE);
     }

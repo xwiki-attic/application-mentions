@@ -19,6 +19,8 @@
  */
 package org.xwiki.contrib.mentions.internal.async.jobs;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -29,7 +31,7 @@ import javax.inject.Named;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.contrib.mentions.MentionNotificationService;
-import org.xwiki.contrib.mentions.MentionXDOMService;
+import org.xwiki.contrib.mentions.internal.MentionXDOMService;
 import org.xwiki.contrib.mentions.MentionLocation;
 import org.xwiki.contrib.mentions.internal.async.MentionsUpdatedRequest;
 import org.xwiki.contrib.mentions.internal.async.MentionsUpdatedStatus;
@@ -148,17 +150,18 @@ public class MentionsUpdateJob extends AbstractJob<MentionsUpdatedRequest, Menti
         List<MacroBlock> oldMentions = this.xdomService.listMentionMacros(oldXdom);
         List<MacroBlock> newMentions = this.xdomService.listMentionMacros(newXdom);
 
-        Map<DocumentReference, Long> oldCounts = this.xdomService.countByIdentifier(oldMentions);
-        Map<DocumentReference, Long> newCounts = this.xdomService.countByIdentifier(newMentions);
+        Map<DocumentReference, List<String>> oldCounts = this.xdomService.countByIdentifier(oldMentions);
+        Map<DocumentReference, List<String>> newCounts = this.xdomService.countByIdentifier(newMentions);
 
         // for each user, we check its number of mentions and compare it to the same number on the 
         // old document (or 0 if the user wan't mentionned before).
         // If the number increased, a notification is send.
-        newCounts.forEach((k, v) -> {
-            Long oldCount = oldCounts.getOrDefault(k, 0L);
-            if (v > oldCount) {
-                this.notificationService.sendNotif(authorReference, documentReference, k, location);
-            }
+        newCounts.forEach((key, value) -> {
+            List<String> oldCount = oldCounts.getOrDefault(key, Collections.emptyList());
+            List<String> mutatedValues = new ArrayList(value);
+            mutatedValues.removeAll(oldCount);
+            mutatedValues.forEach(anchorId ->
+                this.notificationService.sendNotif(authorReference, documentReference, key, location, anchorId));
         });
     }
 
@@ -169,9 +172,8 @@ public class MentionsUpdateJob extends AbstractJob<MentionsUpdatedRequest, Menti
 
         // the matching element has not be found in the previous version of the document
         // notification are send unconditionally to all mentioned users.
-        this.xdomService.countByIdentifier(newMentions)
-            .forEach((identity, v) -> this.notificationService
-                                          .sendNotif(authorReference, documentReference, identity, location));
+        this.xdomService.countByIdentifier(newMentions).forEach((key, value) -> value.forEach(anchorId ->
+            this.notificationService.sendNotif(authorReference, documentReference, key, location, anchorId)));
     }
 
     @Override

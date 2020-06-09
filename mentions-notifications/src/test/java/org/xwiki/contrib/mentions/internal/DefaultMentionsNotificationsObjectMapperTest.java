@@ -56,11 +56,17 @@ class DefaultMentionsNotificationsObjectMapperTest
     {
         Optional<MentionEventParams> actual =
             this.objectMapper.unserialize(
-                "{\"userReference\":\"xwiki:XWiki.User\",\"documentReference\":\"xwiki:XWiki.Doc\",\"location\":\"COMMENT\"}");
+                "{\"userReference\":\"xwiki:XWiki.User\","
+                    + "\"documentReference\":\"xwiki:XWiki.Doc\","
+                    + "\"location\":\"COMMENT\","
+                    + "\"anchor\":\"myAnchor\"}");
         assertTrue(actual.isPresent());
         MentionEventParams expected =
-            new MentionEventParams().setDocumentReference("xwiki:XWiki.Doc").setUserReference("xwiki:XWiki.User")
-                .setLocation(COMMENT);
+            new MentionEventParams()
+                .setDocumentReference("xwiki:XWiki.Doc")
+                .setUserReference("xwiki:XWiki.User")
+                .setLocation(COMMENT)
+                .setAnchor("myAnchor");
         assertEquals(expected, actual.get());
     }
 
@@ -68,11 +74,17 @@ class DefaultMentionsNotificationsObjectMapperTest
     void serialize()
     {
         Optional<String> actual = this.objectMapper.serialize(
-            new MentionEventParams().setLocation(COMMENT).setUserReference("xwiki:XWiki.User")
-                .setDocumentReference("xwiki:XWiki.Doc"));
+            new MentionEventParams()
+                .setLocation(COMMENT)
+                .setUserReference("xwiki:XWiki.User")
+                .setDocumentReference("xwiki:XWiki.Doc")
+                .setAnchor("anchor"));
         assertTrue(actual.isPresent());
         assertEquals(
-            "{\"userReference\":\"xwiki:XWiki.User\",\"documentReference\":\"xwiki:XWiki.Doc\",\"location\":\"COMMENT\"}",
+            "{\"userReference\":\"xwiki:XWiki.User\","
+                + "\"documentReference\":\"xwiki:XWiki.Doc\","
+                + "\"location\":\"COMMENT\","
+                + "\"anchor\":\"anchor\"}",
             actual.get());
     }
 }

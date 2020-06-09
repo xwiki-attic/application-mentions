@@ -51,12 +51,13 @@ public class DefaultMentionNotificationService implements MentionNotificationSer
 
     @Override
     public void sendNotif(DocumentReference authorReference, DocumentReference documentReference,
-        DocumentReference mentionedIdentity, MentionLocation location)
+        DocumentReference mentionedIdentity, MentionLocation location, String anchorId)
     {
         MentionEventParams params = new MentionEventParams()
                                         .setUserReference(authorReference.toString())
                                         .setDocumentReference(documentReference.toString())
-                                        .setLocation(location);
+                                        .setLocation(location)
+                                        .setAnchor(anchorId);
         MentionEvent event =
             new MentionEvent(Collections.singleton(this.serializer.serialize(mentionedIdentity)), params);
         this.observationManager.notify(event, "org.xwiki.contrib:mentions-notifications", MentionEvent.EVENT_TYPE);

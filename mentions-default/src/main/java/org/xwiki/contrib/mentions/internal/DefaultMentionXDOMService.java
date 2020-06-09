@@ -20,6 +20,8 @@
 package org.xwiki.contrib.mentions.internal;
 
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +35,6 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
-import org.xwiki.contrib.mentions.MentionXDOMService;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.rendering.block.Block;
@@ -55,6 +56,8 @@ public class DefaultMentionXDOMService implements MentionXDOMService
     private static final String MENTION_MACRO_NAME = "mention";
 
     private static final String IDENTIFIER_PARAM_NAME = "identifier";
+
+    private static final String ANCHORID_PARAM_NAME = "anchor";
 
     @Inject
     private Logger logger;
@@ -78,13 +81,17 @@ public class DefaultMentionXDOMService implements MentionXDOMService
     }
 
     @Override
-    public Map<DocumentReference, Long> countByIdentifier(List<MacroBlock> mentions)
+    public Map<DocumentReference, List<String>> countByIdentifier(List<MacroBlock> mentions)
     {
-        Map<DocumentReference, Long> ret = new HashMap<>();
+        Map<DocumentReference, List<String>> ret = new HashMap<>();
         for (MacroBlock block : mentions) {
             String identifier = block.getParameter(IDENTIFIER_PARAM_NAME);
             DocumentReference reference = this.documentReferenceResolver.resolve(identifier);
-            ret.merge(reference, 1L, Long::sum);
+            String anchor = block.getParameter(ANCHORID_PARAM_NAME);
+            ret.merge(reference, new ArrayList<>(Collections.singletonList(anchor)), (l1, l2) -> {
+                l1.addAll(l2);
+                return l1;
+            });
         }
         return ret;
     }

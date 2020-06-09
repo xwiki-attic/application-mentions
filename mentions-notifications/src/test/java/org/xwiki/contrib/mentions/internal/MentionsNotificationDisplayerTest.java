@@ -19,6 +19,7 @@
  */
 package org.xwiki.contrib.mentions.internal;
 
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +31,6 @@ import javax.script.ScriptContext;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.xwiki.bridge.DocumentAccessBridge;
-import org.xwiki.contrib.mentions.MentionsNotificationsObjectMapper;
 import org.xwiki.contrib.mentions.events.MentionEvent;
 import org.xwiki.contrib.mentions.events.MentionEventParams;
 import org.xwiki.eventstream.Event;
@@ -47,9 +47,13 @@ import org.xwiki.test.junit5.mockito.MockComponent;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
+import com.xpn.xwiki.web.XWikiURLFactory;
 
 import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -111,12 +115,22 @@ public class MentionsNotificationDisplayerTest
         when(this.documentAccess.getDocumentInstance(userReference)).thenReturn(userDocument);
         XWikiDocument pageDocument = mock(XWikiDocument.class);
         when(this.documentAccess.getDocumentInstance(documentReference)).thenReturn(pageDocument);
+        when(pageDocument.getName()).thenReturn("Doc");
+
         when(userDocument.getExternalURL("view", this.context)).thenReturn("http://wiki/user/1");
-        when(pageDocument.getExternalURL("view", this.context)).thenReturn("http://wiki/page/1");
+
+        String anchor = "myAnchor";
+
+        XWikiURLFactory urlFactory = mock(XWikiURLFactory.class);
+        when(context.getURLFactory()).thenReturn(urlFactory);
+        when(urlFactory.createExternalURL(any(), eq("Doc"), eq("view"), isNull(), eq(anchor), eq(context)))
+            .thenReturn(new URL("http://wiki/page/1#myAnchor"));
 
         DefaultEvent mentionEvent = new DefaultEvent();
         HashMap<String, String> eventParameters = new HashMap<>();
-        String mpValue = "{ \"userReference\": \"xwiki:XWiki.U1\", \"documentReference\": \"xwiki:XWiki.Doc\" }";
+        String mpValue = "{ \"userReference\": \"xwiki:XWiki.U1\", "
+            + "\"documentReference\": \"xwiki:XWiki.Doc\", "
+            + "\"anchor\":\"" + anchor + "\" }";
         eventParameters.put(MENTIONS_PARAMETER_KEY, mpValue);
         mentionEvent.setParameters(eventParameters);
 
@@ -125,7 +139,8 @@ public class MentionsNotificationDisplayerTest
         MentionEventParams mentionEventParams =
             new MentionEventParams().setDocumentReference(documentReference.toString())
                 .setUserReference(userReference.toString())
-                .setLocation(DOCUMENT);
+                .setLocation(DOCUMENT)
+                .setAnchor(anchor);
         when(this.objectMapper.unserialize(mpValue)).thenReturn(Optional.of(mentionEventParams));
 
         this.displayer.renderNotification(new CompositeEvent(mentionEvent));
@@ -133,7 +148,7 @@ public class MentionsNotificationDisplayerTest
         Map<Event, MentionView> paramsMap = new HashMap<>();
         MentionView mentionView = new MentionView()
                                       .setAuthorURL("http://wiki/user/1")
-                                      .setDocumentURL("http://wiki/page/1")
+                                      .setDocumentURL("http://wiki/page/1#myAnchor")
                                       .setDocument(pageDocument)
                                       .setLocation("DOCUMENT");
         paramsMap.put(mentionEvent, mentionView);

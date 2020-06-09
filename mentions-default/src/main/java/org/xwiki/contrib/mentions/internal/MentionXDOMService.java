@@ -17,36 +17,46 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.xwiki.contrib.mentions;
+package org.xwiki.contrib.mentions.internal;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.xwiki.component.annotation.Role;
-import org.xwiki.contrib.mentions.events.MentionEventParams;
+import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.rendering.block.MacroBlock;
+import org.xwiki.rendering.block.XDOM;
 import org.xwiki.stability.Unstable;
 
 /**
- * Provides the operations to serialize and unserializa objects that holds mentions notifications datas.
+ * A service for manipulating XDOM trees in the context of the mentions.
  *
  * @version $Id$
  * @since 1.0
  */
 @Role
 @Unstable
-public interface MentionsNotificationsObjectMapper
+public interface MentionXDOMService
 {
     /**
-     * Unserializes the data to {@link MentionEventParams}.
-     *
-     * @param data The content to unserialize.
-     * @return The content serialized. {@link Optional#empty()} if the unserialization failed.
+     * Search for the mentions macro inside an {@link XDOM}.
+     * @param xdom The xdom.
+     * @return The list of mentions macro found in the XDOM.
      */
-    Optional<MentionEventParams> unserialize(String data);
+    List<MacroBlock> listMentionMacros(XDOM xdom);
 
     /**
-     * Serializez a {@link MentionEventParams} into a json string.
-     * @param params The params.
-     * @return The resulting json string. {@link Optional#empty()} in case of error.
+     * Count the number of mentions per identifier.
+     * @param mentions the list of mentions.
+     * @return the map of number of mentions per identifier.
      */
-    Optional<String> serialize(MentionEventParams params);
+    Map<DocumentReference, List<String>> countByIdentifier(List<MacroBlock> mentions);
+
+    /**
+     *
+     * @param payload the string to parse.
+     * @return The result of the parsing. Empty if the parsing failed.
+     */
+    Optional<XDOM> parse(String payload);
 }
