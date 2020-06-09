@@ -181,7 +181,7 @@
               inline: true,
               parameters: {
                 reference: param.id,
-                style: 'FIRST_AND_LAST_NAME',
+                style: 'FULL_NAME',
               }
             });
           });
@@ -750,7 +750,7 @@
       <name>style</name>
     </property>
     <property>
-      <type>org.xwiki.contrib.mentions.DisplayChoice</type>
+      <type>org.xwiki.contrib.mentions.DisplayStyle</type>
     </property>
   </object>
 </xwikidoc>

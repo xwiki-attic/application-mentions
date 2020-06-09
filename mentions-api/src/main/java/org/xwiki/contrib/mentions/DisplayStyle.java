@@ -20,17 +20,17 @@
 package org.xwiki.contrib.mentions;
 
 /**
- * List the different way allowed to display a user mention.
+ * List of the different display style of the user mentions.
  *
  * @version $Id$
  * @since 1.0
  */
-public enum DisplayChoice
+public enum DisplayStyle
 {
     /**
      * Displays the first and last name of the mentioned user.
      */
-    FIRST_AND_LAST_NAME,
+    FULL_NAME,
 
     /**
      * Displays only the first name of the mentioned user.

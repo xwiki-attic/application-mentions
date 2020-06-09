@@ -93,6 +93,11 @@
                     "code": "java.class.removed",
                     "old": "class org.xwiki.contrib.mentions.events.MentionEventParams",
                     "justification": "Not removed but moved to mentions-api module."
+                  },
+                  {
+                    "code": "java.class.removed",
+                    "old": "enum org.xwiki.contrib.mentions.DisplayChoice",
+                    "justification": "Renamed to DisplayStyle."
                   }
                 ]
               }

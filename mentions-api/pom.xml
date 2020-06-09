@@ -50,4 +50,29 @@
       <version>${rendering.version}</version>
     </dependency>
   </dependencies>
+<!--  <build>-->
+<!--    <plugins>-->
+<!--      <plugin>-->
+<!--        <groupId>org.revapi</groupId>-->
+<!--        <artifactId>revapi-maven-plugin</artifactId>-->
+<!--        <configuration>-->
+<!--          &lt;!&ndash; TODO: to be removed when moved to xwiki-platform &ndash;&gt;-->
+<!--          <analysisConfiguration><![CDATA[-->
+<!--            {-->
+<!--              "revapi": {-->
+<!--                "ignore" : [-->
+<!--                  {-->
+<!--                    "code": "java.class.removed",-->
+<!--                    "old": "enum org.xwiki.contrib.mentions.DisplayChoice (archive = MavenArchive[gav=org.xwiki.contrib:mentions-api:jar:1.0, file=\/home\/mleduc\/.m2\/repository\/org\/xwiki\/contrib\/mentions-api\/1.0\/mentions-api-1.0.jar], in api = true, through use = false)",-->
+<!--                    "justification": "Renamed to DisplayStyle."-->
+<!--                  }-->
+<!--                ]-->
+<!--              }-->
+<!--            }-->
+<!--          ]]></analysisConfiguration>-->
+<!--        </configuration>-->
+<!--      </plugin>-->
+
+<!--    </plugins>-->
+<!--  </build>-->
 </project>
