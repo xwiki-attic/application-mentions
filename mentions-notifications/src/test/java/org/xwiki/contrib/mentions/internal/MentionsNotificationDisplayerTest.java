@@ -53,7 +53,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.xwiki.contrib.mentions.internal.MentionLocation.DOCUMENT;
+import static org.xwiki.contrib.mentions.MentionLocation.DOCUMENT;
 import static org.xwiki.contrib.mentions.internal.MentionsRecordableEventConverter.MENTIONS_PARAMETER_KEY;
 
 /**

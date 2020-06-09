@@ -42,7 +42,7 @@
   <dependencies>
     <dependency>
       <groupId>org.xwiki.contrib</groupId>
-      <artifactId>mentions-commons</artifactId>
+      <artifactId>mentions-api</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

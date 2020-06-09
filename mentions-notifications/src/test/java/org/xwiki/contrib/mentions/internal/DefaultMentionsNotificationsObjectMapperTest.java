@@ -28,7 +28,7 @@ import org.xwiki.test.junit5.mockito.InjectMockComponents;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.xwiki.contrib.mentions.internal.MentionLocation.COMMENT;
+import static org.xwiki.contrib.mentions.MentionLocation.COMMENT;
 
 /**
  * Test of {@link DefaultMentionsNotificationsObjectMapper}.

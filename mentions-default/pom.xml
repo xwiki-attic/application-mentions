@@ -20,34 +20,38 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
-    <groupId>org.xwiki.contrib</groupId>
     <artifactId>application-mentions</artifactId>
+    <groupId>org.xwiki.contrib</groupId>
     <version>1.1-SNAPSHOT</version>
   </parent>
-  <artifactId>mentions-api</artifactId>
-  <name>XWiki Mentions - API</name>
-  <description>API to support the mention of users</description>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>mentions-default</artifactId>
+  <version>1.1-SNAPSHOT</version>
+  <name>XWiki Mentions - Default</name>
+  <packaging>jar</packaging>
+  <description>Default implementation of the Mentions components.</description>
   <properties>
-    <xwiki.jacoco.instructionRatio>0.79</xwiki.jacoco.instructionRatio>
+    <xwiki.jacoco.instructionRatio>0.83</xwiki.jacoco.instructionRatio>
   </properties>
   <dependencies>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-platform-eventstream-api</artifactId>
+      <artifactId>xwiki-platform-oldcore</artifactId>
       <version>${platform.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.contrib</groupId>
+      <artifactId>mentions-api</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-platform-model-api</artifactId>
+      <artifactId>xwiki-platform-annotation-core</artifactId>
       <version>${platform.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.rendering</groupId>
-      <artifactId>xwiki-rendering-api</artifactId>
-      <version>${rendering.version}</version>
     </dependency>
   </dependencies>
 </project>
