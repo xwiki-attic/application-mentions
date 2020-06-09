@@ -68,14 +68,14 @@ public class MentionsScriptService implements ScriptService
     }
 
     /**
-     * Generate a new anchor for the given mention identifier.
+     * Generate a new anchor for the given mention reference.
      * Note that this generated anchor should be unique as much as possible.
      *
-     * @param identifier the target of the mention.
+     * @param reference the target of the mention.
      * @return a {@code String} to be used as an anchor in the mention.
      */
-    public String generateAnchor(String identifier)
+    public String generateAnchor(String reference)
     {
-        return this.anchorGenerator.getNextAnchor(identifier);
+        return this.anchorGenerator.getNextAnchor(reference);
     }
 }

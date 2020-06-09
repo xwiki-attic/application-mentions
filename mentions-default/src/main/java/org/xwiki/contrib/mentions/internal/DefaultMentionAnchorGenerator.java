@@ -37,8 +37,8 @@ import org.xwiki.contrib.mentions.MentionAnchorGenerator;
 public class DefaultMentionAnchorGenerator implements MentionAnchorGenerator
 {
     @Override
-    public String getNextAnchor(String identifier)
+    public String getNextAnchor(String reference)
     {
-        return UUID.fromString(identifier).toString();
+        return UUID.fromString(reference).toString();
     }
 }

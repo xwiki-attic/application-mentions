@@ -150,7 +150,7 @@ public class MentionsUpdateJobTest
         XDOM newCommentXDOM = new XDOM(emptyList());
         when(this.xdomService.parse("COMMENT 1 CONTENT")).thenReturn(Optional.of(newCommentXDOM));
         Map<String, String> parameters = new HashMap<>();
-        parameters.put("identifier", "XWiki.U1");
+        parameters.put("reference", "XWiki.U1");
         List<MacroBlock> newCommentNewMentions = singletonList(new MacroBlock("comment", parameters, false));
         when(this.xdomService.listMentionMacros(newCommentXDOM)).thenReturn(newCommentNewMentions);
 
@@ -204,7 +204,7 @@ public class MentionsUpdateJobTest
         when(this.xdomService.parse("COMMENT 0 CONTENT")).thenReturn(Optional.of(oldCommentXDOM));
 
         Map<String, String> parameters = new HashMap<>();
-        parameters.put("identifier", "XWiki.U1");
+        parameters.put("reference", "XWiki.U1");
         List<MacroBlock> newCommentNewMentions = singletonList(new MacroBlock("comment", parameters, false));
         when(this.xdomService.listMentionMacros(newCommentXDOM)).thenReturn(newCommentNewMentions);
 

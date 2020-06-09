@@ -91,7 +91,7 @@ public class MentionsIT
 
         runAsUser(setup, U1_USERNAME, USERS_PWD, () -> {
             setup.createPage(reference.getLastSpaceReference().getName(), reference.getName() + "Mention",
-                "{{mention identifier=\"xwiki:XWiki.U2\" displayChoice=\"LOGIN\" /}}", reference.getName());
+                "{{mention reference=\"xwiki:XWiki.U2\" style=\"LOGIN\" /}}", reference.getName());
         });
 
         runAsUser(setup, U2_USERNAME, USERS_PWD, () -> {

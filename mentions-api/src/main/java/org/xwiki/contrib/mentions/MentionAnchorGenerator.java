@@ -33,11 +33,11 @@ import org.xwiki.stability.Unstable;
 public interface MentionAnchorGenerator
 {
     /**
-     * Generate a new anchor for the given mention identifier.
+     * Generate a new anchor for the given mention reference.
      * Note that this generated anchor should be unique as much as possible.
      *
-     * @param identifier the target of the mention.
+     * @param reference the target of the mention.
      * @return a {@code String} to be used as an anchor in the mention.
      */
-    String getNextAnchor(String identifier);
+    String getNextAnchor(String reference);
 }

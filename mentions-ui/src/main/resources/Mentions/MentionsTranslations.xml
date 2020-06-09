@@ -38,10 +38,10 @@
   <hidden>true</hidden>
   <content>rendering.macro.mention.name=User Mention
 rendering.macro.mention.description=Insert a user mention.
-rendering.macro.mention.parameter.identifier.name=Identifier
-rendering.macro.mention.parameter.identifier.description=The identifier of the mentioned user or group.
-rendering.macro.mention.parameter.displayChoice.name=Display Choice
-rendering.macro.mention.parameter.displayChoice.description=The display choice of the mention (this is only supported for user mention).
+rendering.macro.mention.parameter.reference.name=Reference
+rendering.macro.mention.parameter.reference.description=The mentioned user or group reference.
+rendering.macro.mention.parameter.style.name=Display Style
+rendering.macro.mention.parameter.style.description=The style choice of the mention (this is only supported for user mentions).
 org.xwiki.contrib.mentions.DisplayChoice.FIRST_AND_LAST_NAME=First and last name of the user
 org.xwiki.contrib.mentions.DisplayChoice.FIRST_NAME=First name of the user only
 org.xwiki.contrib.mentions.DisplayChoice.LOGIN=Username

@@ -55,7 +55,7 @@ public class DefaultMentionXDOMService implements MentionXDOMService
 {
     private static final String MENTION_MACRO_NAME = "mention";
 
-    private static final String IDENTIFIER_PARAM_NAME = "identifier";
+    private static final String REFERENCE_PARAM_NAME = "reference";
 
     private static final String ANCHORID_PARAM_NAME = "anchor";
 
@@ -85,8 +85,8 @@ public class DefaultMentionXDOMService implements MentionXDOMService
     {
         Map<DocumentReference, List<String>> ret = new HashMap<>();
         for (MacroBlock block : mentions) {
-            String identifier = block.getParameter(IDENTIFIER_PARAM_NAME);
-            DocumentReference reference = this.documentReferenceResolver.resolve(identifier);
+            String macroReference = block.getParameter(REFERENCE_PARAM_NAME);
+            DocumentReference reference = this.documentReferenceResolver.resolve(macroReference);
             String anchor = block.getParameter(ANCHORID_PARAM_NAME);
             ret.merge(reference, new ArrayList<>(Collections.singletonList(anchor)), (l1, l2) -> {
                 l1.addAll(l2);

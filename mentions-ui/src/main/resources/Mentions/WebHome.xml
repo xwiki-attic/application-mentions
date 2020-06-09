@@ -36,5 +36,5 @@
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>true</hidden>
-  <content>{{mention identifier="XWiki.Admin" displayChoice="FIRST_AND_LAST_NAME"/}} {{mention identifier="XWiki.Admin" displayChoice="FIRST_NAME"/}} {{mention identifier="XWiki.Admin" displayChoice="LOGIN"/}}</content>
+  <content>{{mention reference="XWiki.Admin" style="FIRST_AND_LAST_NAME"/}} {{mention reference="XWiki.Admin" style="FIRST_NAME"/}} {{mention reference="XWiki.Admin" style="LOGIN"/}}</content>
 </xwikidoc>

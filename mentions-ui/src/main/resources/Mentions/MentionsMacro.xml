@@ -180,8 +180,8 @@
               name: 'mention',
               inline: true,
               parameters: {
-                identifier: param.id,
-                displayChoice: 'FIRST_AND_LAST_NAME',
+                reference: param.id,
+                style: 'FIRST_AND_LAST_NAME',
               }
             });
           });
@@ -548,25 +548,25 @@
     </property>
     <property>
       <code>{{velocity}}
-#set ($identifier = $wikimacro.parameters.identifier)
-#set ($displayChoice = $wikimacro.parameters.displayChoice)
-#set ($userProperties = $services.user.getProperties($identifier))
+#set ($reference = $wikimacro.parameters.reference)
+#set ($style = $wikimacro.parameters.style)
+#set ($userProperties = $services.user.getProperties($reference))
 #set ($firstName = $userProperties.getFirstName())
 #set ($lastName = $userProperties.getLastName())
-#set ($isCurrentUser = $xcontext.userReference == $identifier.reference)
+#set ($isCurrentUser = $xcontext.userReference == $reference.reference)
 #set ($cssClasses = ['mention', 'user'])
 #if ($isCurrentUser)
   #set ($discard = $cssClasses.add('self'))
-  #set ($link = $xwiki.getURL($identifier.reference, 'view'))
+  #set ($link = $xwiki.getURL($reference.reference, 'view'))
 #end
-#if ($displayChoice == 'FIRST_NAME')
+#if ($style == 'FIRST_NAME')
   #set($content = "@$firstName")
-#elseif ($displayChoice == 'LOGIN')
-  #set($content = "@$identifier.reference.name")
+#elseif ($style == 'LOGIN')
+  #set($content = "@$reference.reference.name")
 #else
   #set($content = "@$firstName $!lastName")
 #end
-(% class="$stringtool.join($cssClasses, ' ')" %) [[$content&gt;&gt;$identifier.reference]]
+(% class="$stringtool.join($cssClasses, ' ')" %) [[$content&gt;&gt;$reference.reference]]
 {{/velocity}}</code>
     </property>
     <property>
@@ -663,13 +663,13 @@
       <defaultValue/>
     </property>
     <property>
-      <description>The identifier of the mentioned user or group.</description>
+      <description>The mentioned user or group reference.</description>
     </property>
     <property>
       <mandatory>1</mandatory>
     </property>
     <property>
-      <name>identifier</name>
+      <name>reference</name>
     </property>
     <property>
       <type>org.xwiki.user.UserReference</type>
@@ -741,13 +741,13 @@
       <defaultValue/>
     </property>
     <property>
-      <description>The display choice of the mention (this is only supported for user mention).</description>
+      <description>The display style of the mention (this is only supported for user mentions).</description>
     </property>
     <property>
       <mandatory>1</mandatory>
     </property>
     <property>
-      <name>displayChoice</name>
+      <name>style</name>
     </property>
     <property>
       <type>org.xwiki.contrib.mentions.DisplayChoice</type>

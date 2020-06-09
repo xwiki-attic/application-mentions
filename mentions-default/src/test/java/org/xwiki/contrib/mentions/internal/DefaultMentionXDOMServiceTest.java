@@ -174,10 +174,10 @@ public class DefaultMentionXDOMServiceTest
         assertEquals(Optional.empty(), actual);
     }
 
-    private MacroBlock initMentionMacro(String identifier, String anchor)
+    private MacroBlock initMentionMacro(String reference, String anchor)
     {
         HashMap<String, String> parameters = new HashMap<>();
-        parameters.put("identifier", identifier);
+        parameters.put("reference", reference);
         parameters.put("anchor", anchor);
         return new MacroBlock("mention", parameters, false);
     }

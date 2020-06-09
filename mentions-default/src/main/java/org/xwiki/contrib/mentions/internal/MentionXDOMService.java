@@ -47,9 +47,9 @@ public interface MentionXDOMService
     List<MacroBlock> listMentionMacros(XDOM xdom);
 
     /**
-     * Count the number of mentions per identifier.
+     * Count the number of mentions per reference.
      * @param mentions the list of mentions.
-     * @return the map of number of mentions per identifier.
+     * @return the map of number of mentions per reference.
      */
     Map<DocumentReference, List<String>> countByIdentifier(List<MacroBlock> mentions);
 

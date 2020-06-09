@@ -84,7 +84,7 @@ public class MentionsCreateJobTest
         DocumentReference authorReference = new DocumentReference("xwiki", "XWiki", "U2");
         DocumentReference documentReference = new DocumentReference("xwiki", "XWiki", "Doc");
         HashMap<String, String> mentionParams = new HashMap<>();
-        mentionParams.put("identifier", "XWiki.U1");
+        mentionParams.put("reference", "XWiki.U1");
         mentionParams.put("anchor", "anchor1");
         MacroBlock mention = new MacroBlock("mention", mentionParams, false);
         XDOM xdom = new XDOM(singletonList(new ParagraphBlock(asList(
@@ -166,7 +166,7 @@ public class MentionsCreateJobTest
         when(this.document.getXObjects()).thenReturn(xObjects);
 
         HashMap<String, String> parameters = new HashMap<>();
-        parameters.put("identifier", "XWiki.User");
+        parameters.put("reference", "XWiki.User");
         MacroBlock mention = new MacroBlock("mention", parameters, false);
         List<MacroBlock> mentionsBlocks = singletonList(mention);
         XDOM xdom1 = new XDOM(mentionsBlocks);
