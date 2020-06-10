@@ -126,6 +126,51 @@
     </property>
     <property>
       <code>require(['deferred!ckeditor', 'jquery'], function (ckeditorPromise, $) {
+  /*
+   * Keep records of the added anchors during the current edit session.
+   * Note that the anchors saved here are not only the ones added on the current session,
+   * but also those already present in the document. 
+   * For more information, see #getAnchor.
+   * The information are stored on the form:
+   * { reference: Array&lt;String&gt; }
+   */
+  const anchorIds = {};
+  
+  /**
+   * Compute a new unique anchor for the given reference.
+   * The uniqueness of the anchor is given by two mechanisms:
+   *   - retrieve on first call all mentions available on current document and store them
+   *   - then use that information to compute a next anchor not overlapping an existing one on the current document.
+   * The mechanism is obviously not perfect and might be improved later but should be enough for most usage.
+   */
+  const getAnchor = function (reference) {
+    var existingIds;
+    
+    if (anchorIds.hasOwnProperty(reference)) {
+      existingIds = anchorIds[reference];
+    } else {
+      existingIds = [];
+      $('.xwiki-mention').each(function() {
+        var mention = $(this);
+        console.log(mention.attr('data-reference'));
+        if (mention.attr('data-reference') === reference) {
+          existingIds.push(mention.attr('id'));
+        }
+      });
+      anchorIds[reference] = existingIds;
+    }
+    
+    var counter = existingIds.length + 1;
+    var refId = reference.replaceAll(/[.:]/g, '-');
+    var proposedAnchor = refId + "-" + counter;
+    while (existingIds.indexOf(proposedAnchor) != -1) {
+      counter++;
+      proposedAnchor = refId + "-" + counter;
+    }
+    anchorIds[reference].push(proposedAnchor);
+    return proposedAnchor;
+  };
+  
   const getGlobalUsers = function (params) {
     return getUsers($.extend(params, {
       'wiki': 'global'
@@ -182,6 +227,7 @@
               parameters: {
                 reference: param.id,
                 style: 'FULL_NAME',
+                anchor: getAnchor(param.id)
               }
             });
           });
@@ -327,17 +373,17 @@
       <cache>forbid</cache>
     </property>
     <property>
-      <code>.mention a {
+      <code>.xwiki-mention {
   background-color: $services.mentions.mentionsColor;
   border-radius: 8px;
   padding: 2px 5px 2px 5px;
 }
 
-.mention.user.self a {
+.xwiki-mention.user.self {
   background-color: $services.mentions.selfMentionsColor;
 }
 
-.mention.removed a {
+.xwiki-mention.removed {
   text-decoration: line-through;
 }</code>
     </property>
@@ -550,14 +596,14 @@
       <code>{{velocity}}
 #set ($reference = $wikimacro.parameters.reference)
 #set ($style = $wikimacro.parameters.style)
+#set ($anchor = $wikimacro.parameters.anchor)
 #set ($userProperties = $services.user.getProperties($reference))
 #set ($firstName = $userProperties.getFirstName())
 #set ($lastName = $userProperties.getLastName())
 #set ($isCurrentUser = $xcontext.userReference == $reference.reference)
-#set ($cssClasses = ['mention', 'user'])
+#set ($cssClasses = ['xwiki-mention', 'user'])
 #if ($isCurrentUser)
   #set ($discard = $cssClasses.add('self'))
-  #set ($link = $xwiki.getURL($reference.reference, 'view'))
 #end
 #if ($style == 'FIRST_NAME')
   #set($content = "@$firstName")
@@ -566,7 +612,10 @@
 #else
   #set($content = "@$firstName $!lastName")
 #end
-(% class="$stringtool.join($cssClasses, ' ')" %) [[$content&gt;&gt;$reference.reference]]
+#set ($link = $xwiki.getURL($reference.reference, 'view'))
+{{html}}
+&lt;a id="$anchor" class="$stringtool.join($cssClasses, ' ')" data-reference="$services.model.serialize($reference.reference, 'compactwiki')" href="$link"&gt;$content&lt;/a&gt;
+{{/html}}
 {{/velocity}}</code>
     </property>
     <property>
@@ -751,6 +800,84 @@
     </property>
     <property>
       <type>org.xwiki.contrib.mentions.DisplayStyle</type>
+    </property>
+  </object>
+  <object>
+    <name>Mentions.MentionsMacro</name>
+    <number>2</number>
+    <className>XWiki.WikiMacroParameterClass</className>
+    <guid>72ef13d4-6a59-4981-b125-0e38ba9e8728</guid>
+    <class>
+      <name>XWiki.WikiMacroParameterClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <defaultValue>
+        <disabled>0</disabled>
+        <name>defaultValue</name>
+        <number>4</number>
+        <prettyName>Parameter default value</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </defaultValue>
+      <description>
+        <disabled>0</disabled>
+        <name>description</name>
+        <number>2</number>
+        <prettyName>Parameter description</prettyName>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </description>
+      <mandatory>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>mandatory</name>
+        <number>3</number>
+        <prettyName>Parameter mandatory</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </mandatory>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Parameter name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <type>
+        <disabled>0</disabled>
+        <name>type</name>
+        <number>5</number>
+        <prettyName>Parameter type</prettyName>
+        <size>60</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </type>
+    </class>
+    <property>
+      <defaultValue/>
+    </property>
+    <property>
+      <description>Anchor name to be used to link to the mention. This should be preferably unique.</description>
+    </property>
+    <property>
+      <mandatory>1</mandatory>
+    </property>
+    <property>
+      <name>anchor</name>
+    </property>
+    <property>
+      <type>java.lang.String</type>
     </property>
   </object>
 </xwikidoc>

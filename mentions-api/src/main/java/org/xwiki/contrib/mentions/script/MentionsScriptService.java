@@ -24,7 +24,6 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.xwiki.component.annotation.Component;
-import org.xwiki.contrib.mentions.MentionAnchorGenerator;
 import org.xwiki.contrib.mentions.MentionsConfiguration;
 import org.xwiki.script.service.ScriptService;
 import org.xwiki.stability.Unstable;
@@ -44,9 +43,6 @@ public class MentionsScriptService implements ScriptService
     @Inject
     private MentionsConfiguration configuration;
 
-    @Inject
-    private MentionAnchorGenerator anchorGenerator;
-
     /**
      *
      * @see MentionsConfiguration#getMentionsColor()
@@ -65,17 +61,5 @@ public class MentionsScriptService implements ScriptService
     public String getSelfMentionsColor()
     {
         return this.configuration.getSelfMentionsColor();
-    }
-
-    /**
-     * Generate a new anchor for the given mention reference.
-     * Note that this generated anchor should be unique as much as possible.
-     *
-     * @param reference the target of the mention.
-     * @return a {@code String} to be used as an anchor in the mention.
-     */
-    public String generateAnchor(String reference)
-    {
-        return this.anchorGenerator.getNextAnchor(reference);
     }
 }

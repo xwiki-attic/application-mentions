@@ -28,6 +28,7 @@ import org.xwiki.test.docker.junit5.UITest;
 import org.xwiki.test.ui.TestUtils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.xwiki.test.ui.po.BootstrapSwitch.State.ON;
 
 /**
@@ -77,6 +78,7 @@ public class MentionsIT
     @Order(1)
     void basic(TestUtils setup, TestReference reference) throws Exception
     {
+        String pageName = "Mention Test Page";
         runAsSuperAdmin(setup, () -> {
             // create the users.
             setup.createUser(U1_USERNAME, USERS_PWD, null);
@@ -90,15 +92,22 @@ public class MentionsIT
         });
 
         runAsUser(setup, U1_USERNAME, USERS_PWD, () -> {
-            setup.createPage(reference.getLastSpaceReference().getName(), reference.getName() + "Mention",
-                "{{mention reference=\"xwiki:XWiki.U2\" style=\"LOGIN\" /}}", reference.getName());
+            setup.createPage(reference,
+                "{{mention reference=\"xwiki:XWiki.U2\" style=\"LOGIN\" anchor=\"test-mention-1\" /}}",
+                pageName);
         });
 
         runAsUser(setup, U2_USERNAME, USERS_PWD, () -> {
             setup.gotoPage("Main", "WebHome");
             // check that a notif is well received
             NotificationsTrayPage tray = new NotificationsTrayPage();
+            tray.showNotificationTray();
             assertEquals(1, tray.getUnreadNotificationsCount());
+            assertEquals("mentions.mention", tray.getNotificationType(0));
+            String notificationContent = tray.getNotificationContent(0);
+            String expected = "You have received one mention.";
+            assertTrue(notificationContent.contains(expected),
+                String.format("Notification content should contain [%s] but is [%s].", expected, notificationContent));
         });
     }
 
